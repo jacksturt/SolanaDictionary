@@ -1,5 +1,3 @@
-"use client";
-
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -37,38 +35,40 @@ export function CreateEntry() {
         placeholder="Title"
         value={term}
         onChange={(e) => setTerm(e.target.value)}
-        className="w-full rounded-full px-4 py-2 text-black"
+        className="w-full rounded-md border border-solid border-black p-4 text-black"
       />
       <textarea
         placeholder="Definition"
         value={definition}
         onChange={(e) => setDefinition(e.target.value)}
-        className="w-full rounded-full px-4 py-2 text-black"
+        className="w-full rounded-md border border-solid border-black p-4 text-black"
       />
       <textarea
         placeholder="Long Definition"
         value={longDefinition}
         onChange={(e) => setLongDefinition(e.target.value)}
-        className="w-full rounded-full px-4 py-2 text-black"
+        className="w-full rounded-md border border-solid border-black p-4 text-black"
       />
       <input
         type="text"
         placeholder="Links"
         value={links}
         onChange={(e) => setLinks(e.target.value.split(","))}
-        className="w-full rounded-full px-4 py-2 text-black"
+        className="w-full rounded-md border border-solid border-black p-4 text-black"
       />
       <input
         type="text"
         placeholder="Tags"
         value={tags}
         onChange={(e) => setTags(e.target.value.split(","))}
-        className="w-full rounded-full px-4 py-2 text-black"
+        className="w-full rounded-md border border-solid border-black p-4 text-black"
       />
       <button
         type="submit"
-        className="rounded-full bg-white/10 px-10 py-3 font-semibold transition hover:bg-white/20"
-        disabled={createPost.isPending}
+        className="rounded-md border border-black bg-white/20 px-10 py-3 font-semibold transition hover:bg-white/20"
+        disabled={
+          createPost.isPending || !term || !definition || !longDefinition
+        }
       >
         {createPost.isPending ? "Submitting..." : "Submit"}
       </button>

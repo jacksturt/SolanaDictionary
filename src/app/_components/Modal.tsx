@@ -1,13 +1,14 @@
+"use client";
+
 import {
-  FC,
-  ReactNode,
-  HTMLAttributes,
-  Dispatch,
-  SetStateAction,
+  type FC,
+  type ReactNode,
+  type HTMLAttributes,
+  type Dispatch,
+  type SetStateAction,
   useRef,
 } from "react";
 import { useOutsideAlerter } from "~/hooks/useOutsideAlerter";
-import Close from "~/app/_components/icons/close";
 import { motion } from "framer-motion";
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
@@ -42,18 +43,12 @@ const Modal: FC<Props> = (props: Props) => {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`bg-neutral100 3xl:w-[70vh] absolute left-1/2
-          top-1/2 max-h-[90vh] w-[90%] -translate-x-1/2
-          -translate-y-1/2 transform overflow-y-auto overflow-x-hidden rounded-md
+        className={`3xl:w-[70vh] absolute left-1/2 top-1/2
+          max-h-[90vh] w-[90%] -translate-x-1/2 -translate-y-1/2
+          transform overflow-y-auto overflow-x-hidden rounded-md bg-white
           p-5 lg:w-[100vh] ${className}`}
         ref={wrapperRef}
       >
-        <div
-          className="fixed right-5 top-5 cursor-pointer"
-          onClick={() => setShowModal(false)}
-        >
-          <Close className="h-5 w-5 fill-black" />
-        </div>
         {children}
       </div>
     </motion.div>

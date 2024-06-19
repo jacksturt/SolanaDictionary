@@ -1,4 +1,4 @@
-import { MutableRefObject, useEffect } from "react";
+import { type MutableRefObject, useEffect } from "react";
 /*
  * Hook that alerts clicks outside of the passed ref
  */

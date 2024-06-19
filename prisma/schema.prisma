@@ -81,8 +81,8 @@ model UserEntry {
     isCreator Boolean  @default(false)
     canEdit   Boolean  @default(false)
     hasLiked  Boolean  @default(false)
-    user      User     @relation(fields: [userId], references: [id])
-    entry     Entry    @relation(fields: [entryId], references: [id])
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    entry     Entry    @relation(fields: [entryId], references: [id], onDelete: Cascade)
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
