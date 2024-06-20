@@ -47,6 +47,7 @@ model User {
     name          String?
     email         String?     @unique
     emailVerified DateTime?
+    isVerified    Boolean     @default(false)
     image         String?
     isAdmin       Boolean     @default(false)
     accounts      Account[]
@@ -63,28 +64,30 @@ model VerificationToken {
 }
 
 model Entry {
-    id             String      @id @default(cuid())
-    term           String
-    definition     String
-    links          String[]
-    tags           String[]
-    longDefinition String?
-    createdAt      DateTime    @default(now())
-    updatedAt      DateTime    @updatedAt
-    userEntries    UserEntry[]
+    id              String      @id @default(cuid())
+    term            String      @unique
+    definition      String
+    links           String[]
+    tags            String[]
+    peerReviewCount Int         @default(0)
+    longDefinition  String?
+    createdAt       DateTime    @default(now())
+    updatedAt       DateTime    @updatedAt
+    userEntries     UserEntry[]
 }
 
 model UserEntry {
-    id        String   @id @default(cuid())
-    userId    String
-    entryId   String
-    isCreator Boolean  @default(false)
-    canEdit   Boolean  @default(false)
-    hasLiked  Boolean  @default(false)
-    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-    entry     Entry    @relation(fields: [entryId], references: [id], onDelete: Cascade)
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    id          String   @id @default(cuid())
+    userId      String
+    entryId     String
+    isCreator   Boolean  @default(false)
+    canEdit     Boolean  @default(false)
+    hasLiked    Boolean  @default(false)
+    hasReviewed Boolean  @default(false)
+    user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    entry       Entry    @relation(fields: [entryId], references: [id], onDelete: Cascade)
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 
     @@unique([userId, entryId])
 }

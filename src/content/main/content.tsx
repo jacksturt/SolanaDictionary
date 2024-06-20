@@ -7,6 +7,8 @@ import Modal from "~/app/_components/Modal";
 import { type Dispatch, type SetStateAction, useState, useEffect } from "react";
 import { CreateEntry } from "~/app/_components/create-entry";
 import { type Session } from "next-auth";
+import { api } from "~/trpc/react";
+import { cn } from "~/utils";
 
 const columns: ColumnDef<Entry>[] = [
   {
@@ -17,6 +19,11 @@ const columns: ColumnDef<Entry>[] = [
     accessorKey: "definition",
     header: "Definition",
     cell: ({ row }) => <div>{row.getValue("definition")}</div>,
+  },
+  {
+    accessorKey: "peerReviewCount",
+    header: "Peer Reviews",
+    cell: ({ row }) => <div>{row.getValue("peerReviewCount")}</div>,
   },
 ];
 
@@ -41,6 +48,11 @@ function EntryModal({
   setShowModal: Dispatch<SetStateAction<boolean>>;
   session: Session | null;
 }) {
+  const updateEntry = api.entry.peerReview.useMutation();
+  const userHasPeerReviewed = entry.userEntries.some(
+    (userEntry) =>
+      userEntry.userId === session?.user.id && userEntry.hasReviewed,
+  );
   return (
     <Modal setShowModal={setShowModal}>
       <h1 className="mb-4 text-2xl font-bold">{entry.term}</h1>
@@ -60,11 +72,25 @@ function EntryModal({
           </div>
         ))}
       </div>
-      {session?.user?.isAdmin && (
+      {session?.user?.isVerified && (
         <div className="mt-4 flex gap-2">
           {/* TODO: Add edit and delete buttons */}
-          <button className="rounded-md border border-black p-2">Edit</button>
-          <button className="rounded-md border border-black p-2">Delete</button>
+          {/* <button className="rounded-md border border-black p-2">Edit</button>
+          <button className="rounded-md border border-black p-2">Delete</button> */}
+          <button
+            className={cn(
+              "rounded-md border p-2",
+              userHasPeerReviewed ? "border-red-500" : "border-green-500",
+            )}
+            onClick={() => {
+              updateEntry.mutate({
+                id: entry.id,
+                hasBeenPeerReviewed: !userHasPeerReviewed,
+              });
+            }}
+          >
+            {userHasPeerReviewed ? "Revoke Review" : "Add Review"}
+          </button>
         </div>
       )}
     </Modal>
@@ -101,7 +127,7 @@ function EntryContent({
           onChange={(e) => setSearchTerm(e.target.value)}
           className="mb-4 w-full rounded-md border border-solid border-black p-4 text-black"
         />
-        {session?.user?.isAdmin && (
+        {session?.user && (
           <button
             onClick={() => setShowCreateEntryModal(true)}
             className="mb-4"

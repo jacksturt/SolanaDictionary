@@ -21,6 +21,7 @@ declare module "next-auth" {
     user: {
       id: string;
       isAdmin: boolean;
+      isVerified: boolean;
       // ...other properties
       // role: UserRole;
     } & DefaultSession["user"];
@@ -41,12 +42,15 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     session: async ({ session, user }) => {
       const dbuser = await db.user.findUnique({ where: { id: user.id } });
+
       return {
         ...session,
         user: {
           ...session.user,
           id: user.id,
-          isAdmin: dbuser?.isAdmin,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          isVerified: dbuser?.isVerified ?? false,
+          isAdmin: dbuser?.isAdmin ?? false,
         },
       };
     },
