@@ -43,16 +43,27 @@ model Session {
 }
 
 model User {
-    id            String      @id @default(cuid())
-    name          String?
-    email         String?     @unique
-    emailVerified DateTime?
-    isVerified    Boolean     @default(false)
-    image         String?
-    isAdmin       Boolean     @default(false)
-    accounts      Account[]
-    sessions      Session[]
-    userEntries   UserEntry[]
+    id                    String               @id @default(cuid())
+    name                  String?
+    email                 String?              @unique
+    emailVerified         DateTime?
+    isVerified            Boolean              @default(false)
+    hasFailedVerification Boolean              @default(false)
+    image                 String?
+    isAdmin               Boolean              @default(false)
+    accounts              Account[]
+    sessions              Session[]
+    userEntries           UserEntry[]
+    verificationRequestId String?              @unique
+    verificationRequest   VerificationRequest? @relation()
+}
+
+model VerificationRequest {
+    id        String   @id @default(cuid())
+    userId    String   @unique
+    user      User     @relation(fields: [userId], references: [id])
+    createdAt DateTime @default(now())
+    details   String?
 }
 
 model VerificationToken {

@@ -97,6 +97,43 @@ function EntryModal({
   );
 }
 
+function VerificationRequestModal({
+  setShowModal,
+}: {
+  setShowModal: Dispatch<SetStateAction<boolean>>;
+}) {
+  const createVerificationRequest =
+    api.verificationRequest.create.useMutation();
+  const [details, setDetails] = useState("");
+  return (
+    <Modal setShowModal={setShowModal}>
+      <h1 className="mb-4 text-2xl font-bold">Request Verification</h1>
+      <p className="mb-4">
+        Please explain your qualifications/expertise in Solana
+      </p>
+      <input
+        type="text"
+        placeholder="Details"
+        value={details}
+        onChange={(e) => setDetails(e.target.value)}
+        className="mb-4 w-full rounded-md border border-solid border-black p-4 text-black"
+      />
+      <div className="mt-4 flex gap-2">
+        <button
+          className={cn("rounded-md border p-2", "border-green-500")}
+          onClick={() => {
+            createVerificationRequest.mutate({
+              details,
+            });
+          }}
+        >
+          Submit
+        </button>
+      </div>
+    </Modal>
+  );
+}
+
 function EntryContent({
   entries,
   session,
@@ -109,6 +146,7 @@ function EntryContent({
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<Entry[]>([]);
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
 
   useEffect(() => {
     const results = entries?.filter((entry) =>
@@ -128,12 +166,20 @@ function EntryContent({
           className="mb-4 w-full rounded-md border border-solid border-black p-4 text-black"
         />
         {session?.user && (
-          <button
-            onClick={() => setShowCreateEntryModal(true)}
-            className="mb-4"
-          >
-            Create Entry
-          </button>
+          <div>
+            <button
+              onClick={() => setShowCreateEntryModal(true)}
+              className="mb-4"
+            >
+              Create Entry
+            </button>
+            {!session.user.isVerified &&
+              !session.user.hasFailedVerification && (
+                <button onClick={() => setShowVerifyModal(true)}>
+                  Request Verification
+                </button>
+              )}
+          </div>
         )}
 
         {entries && (
@@ -156,6 +202,9 @@ function EntryContent({
 
         {showCreateEntryModal && (
           <CreateEntryModal setShowModal={setShowCreateEntryModal} />
+        )}
+        {showVerifyModal && (
+          <VerificationRequestModal setShowModal={setShowVerifyModal} />
         )}
       </div>
     </div>

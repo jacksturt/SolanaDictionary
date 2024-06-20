@@ -22,6 +22,7 @@ declare module "next-auth" {
       id: string;
       isAdmin: boolean;
       isVerified: boolean;
+      hasFailedVerification: boolean;
       // ...other properties
       // role: UserRole;
     } & DefaultSession["user"];
@@ -51,6 +52,7 @@ export const authOptions: NextAuthOptions = {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           isVerified: dbuser?.isVerified ?? false,
           isAdmin: dbuser?.isAdmin ?? false,
+          hasFailedVerification: dbuser?.hasFailedVerification ?? false,
         },
       };
     },
