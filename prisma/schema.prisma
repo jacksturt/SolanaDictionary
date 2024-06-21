@@ -56,6 +56,8 @@ model User {
     userEntries           UserEntry[]
     verificationRequestId String?              @unique
     verificationRequest   VerificationRequest? @relation()
+    edits                 EntryRevision[]
+    reviews               EntryReview[]
 }
 
 model VerificationRequest {
@@ -75,16 +77,57 @@ model VerificationToken {
 }
 
 model Entry {
-    id              String      @id @default(cuid())
-    term            String      @unique
-    definition      String
-    links           String[]
-    tags            String[]
-    peerReviewCount Int         @default(0)
-    longDefinition  String?
-    createdAt       DateTime    @default(now())
-    updatedAt       DateTime    @updatedAt
-    userEntries     UserEntry[]
+    id             String   @id @default(cuid())
+    // Editable fields (directly)
+    term           String   @unique
+    definition     String
+    links          Json?
+    tags           String[]
+    longDefinition String?
+    acronym        String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Relations
+    userEntries      UserEntry[]
+    edits            EntryRevision[] @relation("edits")
+    currentVersion   EntryRevision?  @relation("currentVersion", fields: [currentVersionId], references: [id])
+    currentVersionId String?         @unique
+    reviews          EntryReview[]
+}
+
+model EntryRevision {
+    id      String @id @default(cuid())
+    entryId String
+    userId  String
+
+    term           String
+    definition     String
+    longDefinition String?
+    links          Json?
+    tags           String[]
+    acronym        String?
+
+    previousTerm           String
+    previousDefinition     String
+    previousLongDefinition String?
+    previousLinks          Json?
+    previousTags           String[]
+    previousAcronym        String?
+
+    createdAt      DateTime        @default(now())
+    updatedAt      DateTime        @updatedAt
+    parentId       String?
+    parent         EntryRevision?  @relation("parent", fields: [parentId], references: [id])
+    children       EntryRevision[] @relation("parent")
+    user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+    entry          Entry           @relation("edits", fields: [entryId], references: [id], onDelete: Cascade)
+    currentVersion Entry?          @relation("currentVersion")
+    entryEditId    String?
+    reviews        EntryReview[]
+
+    @@map("EntryEdit")
 }
 
 model UserEntry {
@@ -94,11 +137,26 @@ model UserEntry {
     isCreator   Boolean  @default(false)
     canEdit     Boolean  @default(false)
     hasLiked    Boolean  @default(false)
+    hasEdited   Boolean  @default(false)
     hasReviewed Boolean  @default(false)
     user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
     entry       Entry    @relation(fields: [entryId], references: [id], onDelete: Cascade)
     createdAt   DateTime @default(now())
     updatedAt   DateTime @updatedAt
+
+    @@unique([userId, entryId])
+}
+
+model EntryReview {
+    id                String         @id @default(cuid())
+    userId            String
+    entryId           String
+    user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+    entry             Entry          @relation(fields: [entryId], references: [id], onDelete: Cascade)
+    createdAt         DateTime       @default(now())
+    updatedAt         DateTime       @updatedAt
+    reviewedVersionId String?
+    reviewedVersion   EntryRevision? @relation(fields: [reviewedVersionId], references: [id], onDelete: Cascade)
 
     @@unique([userId, entryId])
 }

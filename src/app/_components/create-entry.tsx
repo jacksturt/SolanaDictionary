@@ -2,12 +2,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { api } from "~/trpc/react";
+import { ExternalLink } from "~/types";
 
 export function CreateEntry() {
   const router = useRouter();
   const [term, setTerm] = useState("");
   const [definition, setDefinition] = useState("");
-  const [links, setLinks] = useState<string[]>([]);
+  const [links, setLinks] = useState<ExternalLink[]>([]);
   const [tags, setTags] = useState<string[]>([]);
   const [longDefinition, setLongDefinition] = useState("");
 
@@ -32,7 +33,7 @@ export function CreateEntry() {
     >
       <input
         type="text"
-        placeholder="Title"
+        placeholder="Term"
         value={term}
         onChange={(e) => setTerm(e.target.value)}
         className="w-full rounded-md border border-solid border-black p-4 text-black"
@@ -49,13 +50,18 @@ export function CreateEntry() {
         onChange={(e) => setLongDefinition(e.target.value)}
         className="w-full rounded-md border border-solid border-black p-4 text-black"
       />
-      <input
-        type="text"
-        placeholder="Links"
-        value={links}
-        onChange={(e) => setLinks(e.target.value.split(","))}
-        className="w-full rounded-md border border-solid border-black p-4 text-black"
-      />
+      <div>
+        Links
+        <button onClick={() => setLinks([...links, { url: "", title: "" }])}>
+          Add Link
+        </button>
+        {links.map((link, index) => (
+          <div key={index}>
+            <input type="text" value={link.url} />
+            <input type="text" value={link.title} />
+          </div>
+        ))}
+      </div>
       <input
         type="text"
         placeholder="Tags"

@@ -6,7 +6,10 @@ import {
 export const createEntry = protectedProcedure.input(z.object({
     term: z.string(),
     definition: z.string(),
-    links: z.array(z.string()),
+    links: z.array(z.object({
+        url: z.string(),
+        title: z.string(),
+    })),
     tags: z.array(z.string()),
     longDefinition: z.string(),
 })).mutation(async ({ ctx, input }) => {
