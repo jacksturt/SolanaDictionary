@@ -80,12 +80,13 @@ function SentenceParserContent() {
       </div>
       {parsedSentence && (
         <div className="flex gap-1">
-          {parsedSentence.map((entry) => {
+          {parsedSentence.map((entry, index) => {
             if (typeof entry === "string") {
-              return <div>{entry}</div>;
+              return <div key={index}>{entry}</div>;
             }
             return (
               <AnnotatedEntry
+                key={index}
                 entry={entry.entry}
                 setShowModal={setShowModal}
                 setSelectedEntry={setSelectedEntry}

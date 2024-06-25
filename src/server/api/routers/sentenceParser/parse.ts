@@ -12,7 +12,6 @@ export type ParsedSentenceEntry = string | { term: string, entry: Entry };
     const { sentence } = input;
     const splitSentence = sentence.split(" ");
     const parsedSentence: ParsedSentenceEntry[] = [];
-    let lastWasString = false;
     let currentWord = splitSentence[0];
     let currentIndex = 0;
     while (currentWord) {
@@ -40,7 +39,6 @@ export type ParsedSentenceEntry = string | { term: string, entry: Entry };
         });
         if (exactMatch) {
             parsedSentence.push({ term: exactMatch.term, entry: exactMatch });
-            lastWasString = false;
             currentWord = splitSentence[currentIndex + 1];
             currentIndex++;
             continue;
@@ -53,12 +51,13 @@ export type ParsedSentenceEntry = string | { term: string, entry: Entry };
             },
         });
         if (searchResults.length === 0) {
-            if (lastWasString) {
-                parsedSentence[parsedSentence.length - 1] += (" " + currentWord);
+            if (typeof parsedSentence[parsedSentence.length - 1] === "string") {
+                const lastString: string = parsedSentence[parsedSentence.length - 1] as string;
+                const newString = lastString + " " + currentWord;
+                parsedSentence[parsedSentence.length - 1] = newString;
             } else {
                 parsedSentence.push(currentWord);
             }
-            lastWasString = true;
             currentWord = splitSentence[currentIndex + 1];
             currentIndex++;
             continue;
