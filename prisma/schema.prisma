@@ -91,7 +91,7 @@ model Entry {
     // Relations
     userEntries      UserEntry[]
     edits            EntryRevision[] @relation("edits")
-    currentVersion   EntryRevision?  @relation("currentVersion", fields: [currentVersionId], references: [id])
+    currentVersion   EntryRevision?  @relation("currentVersion", fields: [currentVersionId], references: [id], onDelete: Cascade)
     currentVersionId String?         @unique
     reviews          EntryReview[]
     tags             EntryTag[]
@@ -165,9 +165,9 @@ model EntryReview {
 
 model EntryRelation {
     entryAId String
-    entryA   Entry  @relation("relatedTo", fields: [entryAId], references: [id])
+    entryA   Entry  @relation("relatedTo", fields: [entryAId], references: [id], onDelete: Cascade)
     entryBId String
-    entryB   Entry  @relation("relatedFrom", fields: [entryBId], references: [id])
+    entryB   Entry  @relation("relatedFrom", fields: [entryBId], references: [id], onDelete: Cascade)
 
     @@id([entryAId, entryBId])
     @@map("entry_relations")

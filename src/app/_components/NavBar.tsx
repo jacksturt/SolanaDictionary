@@ -8,7 +8,10 @@ export default function Header({ session }: { session: Session | null }) {
   const seedDatabase = api.dev.seed.useMutation();
   return (
     <div className="header flex w-full flex-row items-center justify-between gap-2 border-b border-white px-4 py-4">
-      <div className="text-xl text-black">Solana Dictionary</div>
+      <div className="flex items-center gap-2 text-xl text-black">
+        <img src="/images/solLogo.png" alt="Solana Logo" className="h-8 w-8" />
+        Solana Dictionary
+      </div>
       {session?.user.isAdmin && (
         <button onClick={() => seedDatabase.mutate()}>Seed Database</button>
       )}

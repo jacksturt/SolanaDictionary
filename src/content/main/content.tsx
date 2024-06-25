@@ -39,6 +39,23 @@ const columns: ColumnDef<Entry>[] = [
       </div>
     ),
   },
+  {
+    accessorKey: "tags",
+    header: "Tags",
+    cell: ({ row }) => (
+      <div className="flex gap-2">
+        {row.original.tags.map((tag) => (
+          <div
+            key={tag.tag.id}
+            className="rounded-md border  p-2"
+            style={{ borderColor: tag.tag.color }}
+          >
+            {tag.tag.name}
+          </div>
+        ))}
+      </div>
+    ),
+  },
 ];
 
 function CreateEntryModal({
@@ -216,7 +233,7 @@ function EntryModalEditContent({
           {tags.map((tag, index) => (
             <div
               key={tag.id}
-              className={cn("flex justify-between", `border-4 border-solid`)}
+              className="rounded-md border  p-2"
               style={{ borderColor: tag.color }}
             >
               {tag.name}
@@ -231,27 +248,30 @@ function EntryModalEditContent({
             </div>
           ))}
         </div>
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            createTag.mutate(
-              { name: tagSearchTerm, color: getContrastedHexColor() },
-              {
-                onSuccess: (tag) => {
-                  setTagSearchTerm("");
-                  setTags([...tags, tag]);
-                },
-              },
-            );
-          }}
-          disabled={
-            !tagSearchTerm ||
-            tagSearchResults?.some((tag) => tag.name === tagSearchTerm)
-          }
-          className="rounded-md border border-black bg-white/20 px-10 py-3 font-semibold transition hover:bg-white/20"
-        >
-          Create Tag &quot;{tagSearchTerm}&quot;
-        </button>
+        {tagSearchTerm &&
+          !tagSearchResults?.some((tag) => tag.name === tagSearchTerm) && (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                createTag.mutate(
+                  { name: tagSearchTerm, color: getContrastedHexColor() },
+                  {
+                    onSuccess: (tag) => {
+                      setTagSearchTerm("");
+                      setTags([...tags, tag]);
+                    },
+                  },
+                );
+              }}
+              disabled={
+                !tagSearchTerm ||
+                tagSearchResults?.some((tag) => tag.name === tagSearchTerm)
+              }
+              className="rounded-md border border-black bg-white/20 px-10 py-3 font-semibold transition hover:bg-white/20"
+            >
+              Create Tag &quot;{tagSearchTerm}&quot;
+            </button>
+          )}
         <input
           type="text"
           placeholder="Tag Search"
