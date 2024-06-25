@@ -77,12 +77,11 @@ model VerificationToken {
 }
 
 model Entry {
-    id             String   @id @default(cuid())
+    id             String  @id @default(cuid())
     // Editable fields (directly)
-    term           String   @unique
+    term           String  @unique
     definition     String
     links          Json?
-    tags           String[]
     longDefinition String?
     acronym        String?
 
@@ -95,6 +94,9 @@ model Entry {
     currentVersion   EntryRevision?  @relation("currentVersion", fields: [currentVersionId], references: [id])
     currentVersionId String?         @unique
     reviews          EntryReview[]
+    tags             EntryTag[]
+    relatedTo        EntryRelation[] @relation("relatedTo")
+    relatedFrom      EntryRelation[] @relation("relatedFrom")
 }
 
 model EntryRevision {
@@ -159,4 +161,34 @@ model EntryReview {
     reviewedVersion   EntryRevision? @relation(fields: [reviewedVersionId], references: [id], onDelete: Cascade)
 
     @@unique([userId, entryId])
+}
+
+model EntryRelation {
+    entryAId String
+    entryA   Entry  @relation("relatedTo", fields: [entryAId], references: [id])
+    entryBId String
+    entryB   Entry  @relation("relatedFrom", fields: [entryBId], references: [id])
+
+    @@id([entryAId, entryBId])
+    @@map("entry_relations")
+}
+
+model Tag {
+    id        String     @id @default(cuid())
+    name      String     @unique
+    color     String
+    entries   EntryTag[]
+    createdAt DateTime   @default(now())
+    updatedAt DateTime   @updatedAt
+}
+
+model EntryTag {
+    entryId   String
+    tagId     String
+    entry     Entry    @relation(fields: [entryId], references: [id], onDelete: Cascade)
+    tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@id([entryId, tagId])
 }

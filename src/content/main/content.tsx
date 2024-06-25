@@ -1,16 +1,18 @@
 "use client";
 import styles from "~/styles/Leaderboard.module.scss";
 import { DataTable } from "~/app/_components/tables/DataTable";
-import { type Entry } from "~/server/api/routers/entry/read";
+import { EntrySearchResult, type Entry } from "~/server/api/routers/entry/read";
 import { type ColumnDef } from "@tanstack/react-table";
 import Modal from "~/app/_components/Modal";
 import { type Dispatch, type SetStateAction, useState, useEffect } from "react";
 import { CreateEntry } from "~/app/_components/create-entry";
 import { type Session } from "next-auth";
 import { api } from "~/trpc/react";
-import { cn } from "~/utils";
+import { cn, getContrastedHexColor } from "~/utils";
 import { Prisma } from "@prisma/client";
 import { ExternalLink } from "~/types";
+import { useRouter } from "next/navigation";
+import { Tag } from "~/server/api/routers/tag/read";
 
 const columns: ColumnDef<Entry>[] = [
   {
@@ -51,6 +53,290 @@ function CreateEntryModal({
   );
 }
 
+function EntryModalStaticContent({ entry }: { entry: Entry }) {
+  return (
+    <>
+      <h1 className="mb-4 text-2xl font-bold">{entry.term}</h1>
+      <p className="mb-4">{entry.longDefinition}</p>
+      {entry.links && (entry.links as ExternalLink[]).length > 0 && (
+        <div className="flex flex-col gap-2">
+          <div>links:</div>
+          {(entry.links as ExternalLink[]).map((link) => (
+            <a href={link.url} key={link.url} className="text-blue-500">
+              {link.title}
+            </a>
+          ))}
+        </div>
+      )}
+      <div className="mt-4 flex gap-2">
+        {entry.tags.map((tag) => (
+          <div
+            key={tag.tag.id}
+            className="rounded-md border border-black p-2"
+            style={{ borderColor: tag.tag.color }}
+          >
+            {tag.tag.name}
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function EntryModalEditContent({
+  entry,
+  setEditing,
+}: {
+  entry: Entry;
+  setEditing: Dispatch<SetStateAction<boolean>>;
+}) {
+  const [editingTerm, setEditingTerm] = useState(entry.term);
+  const [editingDefinition, setEditingDefinition] = useState(entry.definition);
+  const [editingLongDefinition, setEditingLongDefinition] = useState(
+    entry.longDefinition ?? "",
+  );
+  const [editingLinks, setEditingLinks] = useState(
+    entry.links as ExternalLink[],
+  );
+  const router = useRouter();
+  const [tags, setTags] = useState<Tag[]>(entry.tags.map((tag) => tag.tag));
+  const [relations, setRelations] = useState<EntrySearchResult[]>(
+    entry.relatedTo.map((relation) => relation.entryB),
+  );
+
+  const [tagSearchTerm, setTagSearchTerm] = useState("");
+  const [entrySearchTerm, setEntrySearchTerm] = useState("");
+  const { data: tagSearchResults } = api.tag.search.useQuery(
+    { query: tagSearchTerm },
+    {
+      enabled: !!tagSearchTerm,
+    },
+  );
+
+  const { data: entrySearchResults } = api.entry.search.useQuery(
+    { query: entrySearchTerm },
+    {
+      enabled: !!entrySearchTerm,
+    },
+  );
+
+  const createTag = api.tag.create.useMutation({
+    onSuccess: () => {
+      router.refresh();
+    },
+  });
+  const createEntryRevision = api.entryRevision.create.useMutation({
+    onSuccess: () => {
+      setEditing(false);
+    },
+  });
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        createEntryRevision.mutate({
+          id: entry.id,
+          term: editingTerm,
+          definition: editingDefinition,
+          links: editingLinks,
+          tags: tags.map((tag) => tag.id),
+          longDefinition: editingLongDefinition,
+          relations: relations.map((relation) => relation.id),
+        });
+      }}
+      className="flex flex-col gap-2"
+    >
+      <input
+        type="text"
+        placeholder="Title"
+        value={editingTerm}
+        onChange={(e) => setEditingTerm(e.target.value)}
+        className="w-full rounded-md border border-solid border-black p-4 text-black"
+      />
+      <textarea
+        placeholder="Definition"
+        value={editingDefinition}
+        onChange={(e) => setEditingDefinition(e.target.value)}
+        className="w-full rounded-md border border-solid border-black p-4 text-black"
+      />
+      <textarea
+        placeholder="Long Definition"
+        value={editingLongDefinition}
+        onChange={(e) => setEditingLongDefinition(e.target.value)}
+        className="w-full rounded-md border border-solid border-black p-4 text-black"
+      />
+      <div className="flex flex-col gap-2">
+        Links
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            setEditingLinks([...editingLinks, { url: "", title: "" }]);
+          }}
+        >
+          Add Link
+        </button>
+        {editingLinks.map((link, index) => (
+          <div key={index} className="flex flex-col gap-2">
+            <input
+              type="text"
+              value={link.url}
+              onChange={(e) => {
+                const newLinks = [...editingLinks];
+                if (newLinks && !!newLinks[index]?.url) {
+                  newLinks[index]!.url = e.target.value;
+                }
+                setEditingLinks(newLinks);
+              }}
+            />
+            <input
+              type="text"
+              value={link.title}
+              onChange={(e) => {
+                const newLinks = [...editingLinks];
+                if (newLinks && !!newLinks[index]) {
+                  newLinks[index]!.title = e.target.value;
+                }
+                setEditingLinks(newLinks);
+              }}
+            />
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                setEditingLinks(editingLinks.filter((_, i) => i !== index));
+              }}
+            >
+              Remove
+            </button>
+          </div>
+        ))}
+      </div>
+      <div className="flex flex-col gap-2">
+        <h1>Tags</h1>
+        <div className="flex flex-col gap-2">
+          {tags.map((tag, index) => (
+            <div
+              key={tag.id}
+              className={cn("flex justify-between", `border-4 border-solid`)}
+              style={{ borderColor: tag.color }}
+            >
+              {tag.name}
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  setTags(tags.filter((_, i) => i !== index));
+                }}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+        </div>
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            createTag.mutate(
+              { name: tagSearchTerm, color: getContrastedHexColor() },
+              {
+                onSuccess: (tag) => {
+                  setTagSearchTerm("");
+                  setTags([...tags, tag]);
+                },
+              },
+            );
+          }}
+          disabled={
+            !tagSearchTerm ||
+            tagSearchResults?.some((tag) => tag.name === tagSearchTerm)
+          }
+          className="rounded-md border border-black bg-white/20 px-10 py-3 font-semibold transition hover:bg-white/20"
+        >
+          Create Tag "{tagSearchTerm}"
+        </button>
+        <input
+          type="text"
+          placeholder="Tag Search"
+          value={tagSearchTerm}
+          onChange={(e) => setTagSearchTerm(e.target.value)}
+        />
+        {tagSearchResults?.map((tag) => (
+          <div
+            className={cn("flex justify-between", `border-4 border-solid`)}
+            style={{ borderColor: tag.color }}
+            key={tag.id}
+          >
+            {tag.name}{" "}
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                setTags([...tags, tag]);
+                setTagSearchTerm("");
+              }}
+            >
+              Add
+            </button>
+          </div>
+        ))}
+      </div>
+      <div className="flex flex-col gap-2">
+        <h1>Related Terms</h1>
+        <div className="flex flex-col gap-2">
+          {relations.map((relation, index) => (
+            <div
+              key={relation.id}
+              className={cn("flex justify-between", `border-1 border-solid`)}
+            >
+              {relation.term}
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  setRelations(relations.filter((_, i) => i !== index));
+                }}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+        </div>
+        <input
+          type="text"
+          placeholder="Search Related Terms"
+          value={entrySearchTerm}
+          onChange={(e) => setEntrySearchTerm(e.target.value)}
+        />
+        {entrySearchResults?.map((entry) => (
+          <div
+            className={cn("flex justify-between", `border-1 border-solid`)}
+            key={entry.id}
+          >
+            {entry.term}{" "}
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                setRelations([...relations, entry]);
+                setEntrySearchTerm("");
+              }}
+            >
+              Add
+            </button>
+          </div>
+        ))}
+      </div>
+      <button
+        type="submit"
+        className="rounded-md border border-black bg-white/20 px-10 py-3 font-semibold transition hover:bg-white/20"
+        disabled={
+          createEntryRevision.isPending ||
+          !editingTerm ||
+          !editingDefinition ||
+          !editingLongDefinition
+        }
+      >
+        {createEntryRevision.isPending ? "Submitting..." : "Submit"}
+      </button>
+    </form>
+  );
+}
+
 function EntryModal({
   entry,
   setShowModal,
@@ -61,141 +347,19 @@ function EntryModal({
   session: Session | null;
 }) {
   const [editing, setEditing] = useState(false);
-  const [editingTerm, setEditingTerm] = useState(entry.term);
-  const [editingDefinition, setEditingDefinition] = useState(entry.definition);
-  const [editingLongDefinition, setEditingLongDefinition] = useState(
-    entry.longDefinition ?? "",
-  );
-  const [editingLinks, setEditingLinks] = useState(
-    entry.links as ExternalLink[],
-  );
-  const [editingTags, setEditingTags] = useState(entry.tags);
+
   const updateEntry = api.entry.peerReview.useMutation();
   const userHasPeerReviewed = entry.userEntries.some(
     (userEntry) =>
       userEntry.userId === session?.user.id && userEntry.hasReviewed,
   );
 
-  const createEntryRevision = api.entryRevision.create.useMutation({
-    onSuccess: () => {
-      setEditing(false);
-    },
-  });
   return (
     <Modal setShowModal={setShowModal}>
       {!editing ? (
-        <>
-          <h1 className="mb-4 text-2xl font-bold">{editingTerm}</h1>
-          <p className="mb-4">{editingLongDefinition}</p>
-          {editingLinks && editingLinks.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <div>links:</div>
-              {editingLinks.map((link) => (
-                <a href={link.url} key={link.url} className="text-blue-500">
-                  {link.title}
-                </a>
-              ))}
-            </div>
-          )}
-          <div className="mt-4 flex gap-2">
-            {editingTags.map((tag) => (
-              <div key={tag} className="rounded-md border border-black p-2">
-                {tag}
-              </div>
-            ))}
-          </div>
-        </>
+        <EntryModalStaticContent entry={entry} />
       ) : (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            createEntryRevision.mutate({
-              id: entry.id,
-              term: editingTerm,
-              definition: editingDefinition,
-              links: editingLinks,
-              tags: editingTags,
-              longDefinition: editingLongDefinition,
-            });
-          }}
-          className="flex flex-col gap-2"
-        >
-          <input
-            type="text"
-            placeholder="Title"
-            value={editingTerm}
-            onChange={(e) => setEditingTerm(e.target.value)}
-            className="w-full rounded-md border border-solid border-black p-4 text-black"
-          />
-          <textarea
-            placeholder="Definition"
-            value={editingDefinition}
-            onChange={(e) => setEditingDefinition(e.target.value)}
-            className="w-full rounded-md border border-solid border-black p-4 text-black"
-          />
-          <textarea
-            placeholder="Long Definition"
-            value={editingLongDefinition}
-            onChange={(e) => setEditingLongDefinition(e.target.value)}
-            className="w-full rounded-md border border-solid border-black p-4 text-black"
-          />
-          <div className="flex flex-col gap-2">
-            Links
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                setEditingLinks([...editingLinks, { url: "", title: "" }]);
-              }}
-            >
-              Add Link
-            </button>
-            {editingLinks.map((link, index) => (
-              <div key={index} className="flex flex-col gap-2">
-                <input
-                  type="text"
-                  value={link.url}
-                  onChange={(e) => {
-                    const newLinks = [...editingLinks];
-                    if (newLinks && !!newLinks[index]?.url) {
-                      newLinks[index]!.url = e.target.value;
-                    }
-                    setEditingLinks(newLinks);
-                  }}
-                />
-                <input
-                  type="text"
-                  value={link.title}
-                  onChange={(e) => {
-                    const newLinks = [...editingLinks];
-                    if (newLinks && !!newLinks[index]) {
-                      newLinks[index]!.title = e.target.value;
-                    }
-                    setEditingLinks(newLinks);
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-          <input
-            type="text"
-            placeholder="Tags"
-            value={editingTags.join(", ")}
-            onChange={(e) => setEditingTags(e.target.value.split(","))}
-            className="w-full rounded-md border border-solid border-black p-4 text-black"
-          />
-          <button
-            type="submit"
-            className="rounded-md border border-black bg-white/20 px-10 py-3 font-semibold transition hover:bg-white/20"
-            disabled={
-              createEntryRevision.isPending ||
-              !editingTerm ||
-              !editingDefinition ||
-              !editingLongDefinition
-            }
-          >
-            {createEntryRevision.isPending ? "Submitting..." : "Submit"}
-          </button>
-        </form>
+        <EntryModalEditContent entry={entry} setEditing={setEditing} />
       )}
       {session?.user?.isVerified && (
         <div className="mt-4 flex gap-2">

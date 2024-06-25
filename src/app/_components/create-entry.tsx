@@ -1,18 +1,25 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Entry, EntrySearchResult } from "~/server/api/routers/entry/read";
+import { Tag } from "~/server/api/routers/tag/read";
 
 import { api } from "~/trpc/react";
 import { ExternalLink } from "~/types";
+import { cn, getContrastedHexColor, getRandomColor } from "~/utils";
 
 export function CreateEntry() {
   const router = useRouter();
   const [term, setTerm] = useState("");
   const [definition, setDefinition] = useState("");
   const [links, setLinks] = useState<ExternalLink[]>([]);
-  const [tags, setTags] = useState<string[]>([]);
+  const [tagSearchTerm, setTagSearchTerm] = useState("");
+  const [entrySearchTerm, setEntrySearchTerm] = useState("");
+  const [acronym, setAcronym] = useState("");
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [relations, setRelations] = useState<EntrySearchResult[]>([]);
   const [longDefinition, setLongDefinition] = useState("");
 
-  const createPost = api.entry.create.useMutation({
+  const createEntry = api.entry.create.useMutation({
     onSuccess: () => {
       router.refresh();
       setTerm("");
@@ -23,11 +30,40 @@ export function CreateEntry() {
     },
   });
 
+  const { data: tagSearchResults } = api.tag.search.useQuery(
+    { query: tagSearchTerm },
+    {
+      enabled: !!tagSearchTerm,
+    },
+  );
+
+  const { data: entrySearchResults } = api.entry.search.useQuery(
+    { query: entrySearchTerm },
+    {
+      enabled: !!entrySearchTerm,
+    },
+  );
+
+  const createTag = api.tag.create.useMutation({
+    onSuccess: () => {
+      router.refresh();
+    },
+  });
+
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        createPost.mutate({ term, definition, links, tags, longDefinition });
+        createEntry.mutate({
+          term,
+          definition,
+          links,
+          tags: tags.length === 0 ? undefined : tags.map((tag) => tag.id),
+          longDefinition,
+          relatedTo: relations.map((relation) => relation.id),
+          relatedFrom: relations.map((relation) => relation.id),
+          acronym,
+        });
       }}
       className="flex flex-col gap-2"
     >
@@ -36,6 +72,13 @@ export function CreateEntry() {
         placeholder="Term"
         value={term}
         onChange={(e) => setTerm(e.target.value)}
+        className="w-full rounded-md border border-solid border-black p-4 text-black"
+      />
+      <input
+        type="text"
+        placeholder="Acronym"
+        value={acronym}
+        onChange={(e) => setAcronym(e.target.value)}
         className="w-full rounded-md border border-solid border-black p-4 text-black"
       />
       <textarea
@@ -52,31 +95,148 @@ export function CreateEntry() {
       />
       <div>
         Links
-        <button onClick={() => setLinks([...links, { url: "", title: "" }])}>
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            setLinks([...links, { url: "", title: "" }]);
+          }}
+        >
           Add Link
         </button>
         {links.map((link, index) => (
           <div key={index}>
             <input type="text" value={link.url} />
             <input type="text" value={link.title} />
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                setLinks(links.filter((_, i) => i !== index));
+              }}
+            >
+              Remove
+            </button>
           </div>
         ))}
       </div>
-      <input
-        type="text"
-        placeholder="Tags"
-        value={tags}
-        onChange={(e) => setTags(e.target.value.split(","))}
-        className="w-full rounded-md border border-solid border-black p-4 text-black"
-      />
+      <div className="flex flex-col gap-2">
+        <h1>Tags</h1>
+        <div className="flex flex-col gap-2">
+          {tags.map((tag, index) => (
+            <div
+              key={tag.id}
+              className={cn("flex justify-between", `border-4 border-solid`)}
+              style={{ borderColor: tag.color }}
+            >
+              {tag.name}
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  setTags(tags.filter((_, i) => i !== index));
+                }}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+        </div>
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            createTag.mutate(
+              { name: tagSearchTerm, color: getContrastedHexColor() },
+              {
+                onSuccess: (tag) => {
+                  setTagSearchTerm("");
+                  setTags([...tags, tag]);
+                },
+              },
+            );
+          }}
+          disabled={
+            !tagSearchTerm ||
+            tagSearchResults?.some((tag) => tag.name === tagSearchTerm)
+          }
+          className="rounded-md border border-black bg-white/20 px-10 py-3 font-semibold transition hover:bg-white/20"
+        >
+          Create Tag "{tagSearchTerm}"
+        </button>
+        <input
+          type="text"
+          placeholder="Tag Search"
+          value={tagSearchTerm}
+          onChange={(e) => setTagSearchTerm(e.target.value)}
+        />
+        {tagSearchResults?.map((tag) => (
+          <div
+            className={cn("flex justify-between", `border-4 border-solid`)}
+            style={{ borderColor: tag.color }}
+            key={tag.id}
+          >
+            {tag.name}{" "}
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                setTags([...tags, tag]);
+                setTagSearchTerm("");
+              }}
+            >
+              Add
+            </button>
+          </div>
+        ))}
+      </div>
+      <div className="flex flex-col gap-2">
+        <h1>Related Terms</h1>
+        <div className="flex flex-col gap-2">
+          {relations.map((relation, index) => (
+            <div
+              key={relation.id}
+              className={cn("flex justify-between", `border-1 border-solid`)}
+            >
+              {relation.term}
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  setRelations(relations.filter((_, i) => i !== index));
+                }}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+        </div>
+        <input
+          type="text"
+          placeholder="Search Related Terms"
+          value={entrySearchTerm}
+          onChange={(e) => setEntrySearchTerm(e.target.value)}
+        />
+        {entrySearchResults?.map((entry) => (
+          <div
+            className={cn("flex justify-between", `border-1 border-solid`)}
+            key={entry.id}
+          >
+            {entry.term}{" "}
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                setRelations([...relations, entry]);
+                setEntrySearchTerm("");
+              }}
+            >
+              Add
+            </button>
+          </div>
+        ))}
+      </div>
       <button
         type="submit"
         className="rounded-md border border-black bg-white/20 px-10 py-3 font-semibold transition hover:bg-white/20"
         disabled={
-          createPost.isPending || !term || !definition || !longDefinition
+          createEntry.isPending || !term || !definition || !longDefinition
         }
       >
-        {createPost.isPending ? "Submitting..." : "Submit"}
+        {createEntry.isPending ? "Submitting..." : "Submit"}
       </button>
     </form>
   );

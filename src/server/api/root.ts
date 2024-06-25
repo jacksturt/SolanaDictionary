@@ -3,6 +3,7 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 import { devRouter } from "./routers/dev";
 import { verificationRequestRouter } from "./routers/verificationRequests";
 import { entryRevisionRouter } from "~/server/api/routers/entryRevision";
+import { tagRouter } from "~/server/api/routers/tag";
 
 /**
  * This is the primary router for your server.
@@ -12,6 +13,7 @@ import { entryRevisionRouter } from "~/server/api/routers/entryRevision";
 export const appRouter = createTRPCRouter({
   entry: entryRouter,
   entryRevision: entryRevisionRouter,
+  tag: tagRouter,
   dev: devRouter,
   verificationRequest: verificationRequestRouter,
 });
