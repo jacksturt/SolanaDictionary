@@ -31,7 +31,6 @@ export const search = publicProcedure.input(z.object({
     query: z.string(),
 })).query(({ ctx, input }) => {
     const { query } = input;
-    console.log(query);
     return ctx.db.entry.findMany({
         where: {
             term: { contains: query },

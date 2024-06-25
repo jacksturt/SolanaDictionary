@@ -70,7 +70,7 @@ function CreateEntryModal({
   );
 }
 
-function EntryModalStaticContent({ entry }: { entry: Entry }) {
+export function EntryModalStaticContent({ entry }: { entry: Entry }) {
   return (
     <>
       <h1 className="mb-4 text-2xl font-bold">{entry.term}</h1>
