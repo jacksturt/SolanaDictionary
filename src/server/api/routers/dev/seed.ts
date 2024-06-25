@@ -11,7 +11,6 @@ const entries: Prisma.EntryCreateInput[] = [
         title: "Banking Stage Source Code",
       },
     ],
-    tags: ["Banking Stage", " Core Solana"],
     longDefinition:
       "The bank stage will do one of two things depending on whether or not the validator is the leader. If it is the leader, then the transactions are processed, and those that do not fail are committed to the bank. If the validator is not the leader, then it will forward packets to the leader. ",
   },
@@ -21,7 +20,6 @@ const entries: Prisma.EntryCreateInput[] = [
     definition:
       "The TPU is the overall system that handles fetching, verifying, processing, etc... for transactions",
     links: [],
-    tags: [],
     longDefinition:
       "The TPU is designed to maximize the throughput and efficiency of transaction processing on the Solana blockchain. It handles multiple tasks including fetching transactions, verifying signatures, processing transactions, and forwarding results",
   },
@@ -35,7 +33,6 @@ const entries: Prisma.EntryCreateInput[] = [
         title: "USDC Website",
       },
     ],
-    tags: [],
     longDefinition:
       "This stable coin is provided by Circle, and is use widely across Solana, and other blockchains. Circle claims that each USDC is backed by a corresponding $USD.",
   },
@@ -48,7 +45,6 @@ const entries: Prisma.EntryCreateInput[] = [
         title: "Turbine Block Propagation",
       },
     ],
-    tags: [],
     longDefinition:
       "Solana's block propagation protocol that breaks data into smaller packets to be distributed across the network efficiently. this is broken into three steps:\n" +
       "- data sharding: breaking the blocks into smaller data packets that are easier to distribute\n" +

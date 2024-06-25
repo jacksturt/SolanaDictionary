@@ -19,7 +19,7 @@ const columns: ColumnDef<Entry>[] = [
     accessorKey: "term",
     header: "Term",
     cell: ({ row }) => (
-      <div>{`${row.getValue("term")} ${row.original.acronym ? `(${row.original.acronym})` : ""}`}</div>
+      <div>{`${row.original.term} ${row.original.acronym ? `(${row.original.acronym})` : ""}`}</div>
     ),
   },
   {
@@ -250,7 +250,7 @@ function EntryModalEditContent({
           }
           className="rounded-md border border-black bg-white/20 px-10 py-3 font-semibold transition hover:bg-white/20"
         >
-          Create Tag "{tagSearchTerm}"
+          Create Tag &quot;{tagSearchTerm}&quot;
         </button>
         <input
           type="text"

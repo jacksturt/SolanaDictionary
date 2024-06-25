@@ -158,7 +158,7 @@ export function CreateEntry() {
           }
           className="rounded-md border border-black bg-white/20 px-10 py-3 font-semibold transition hover:bg-white/20"
         >
-          Create Tag "{tagSearchTerm}"
+          Create Tag &quot;{tagSearchTerm}&quot;
         </button>
         <input
           type="text"
