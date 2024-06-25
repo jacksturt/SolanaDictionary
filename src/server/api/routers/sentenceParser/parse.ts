@@ -15,6 +15,7 @@ export type ParsedSentenceEntry = string | { term: string, entry: Entry };
     let currentWord = splitSentence[0];
     let currentIndex = 0;
     while (currentWord) {
+        console.log(currentWord, currentIndex, splitSentence.length);
         const exactMatch = await ctx.db.entry.findFirst({
             include: {
                 userEntries: {
@@ -34,10 +35,15 @@ export type ParsedSentenceEntry = string | { term: string, entry: Entry };
                 },
               },
             where: {
-                term: currentWord,
+                term: {
+                    startsWith: currentWord,
+                    endsWith: currentWord,
+                    mode: "insensitive",
+                },
             },
         });
         if (exactMatch) {
+            console.log('match')
             parsedSentence.push({ term: exactMatch.term, entry: exactMatch });
             currentWord = splitSentence[currentIndex + 1];
             currentIndex++;
@@ -47,21 +53,24 @@ export type ParsedSentenceEntry = string | { term: string, entry: Entry };
 
         const searchResults = await ctx.db.entry.findMany({
             where: {
-                term: { contains: currentWord },
+                term: { startsWith: currentWord, mode: "insensitive" },
             },
         });
         if (searchResults.length === 0) {
             if (typeof parsedSentence[parsedSentence.length - 1] === "string") {
+                console.log('string')
                 const lastString: string = parsedSentence[parsedSentence.length - 1] as string;
                 const newString = lastString + " " + currentWord;
                 parsedSentence[parsedSentence.length - 1] = newString;
             } else {
+                console.log('not string')
                 parsedSentence.push(currentWord);
             }
             currentWord = splitSentence[currentIndex + 1];
             currentIndex++;
             continue;
         } else {
+            console.log('extend word')
             currentWord += " " + splitSentence[currentIndex + 1];
             currentIndex++;
             continue;

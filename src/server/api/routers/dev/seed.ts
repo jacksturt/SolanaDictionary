@@ -15,7 +15,7 @@ const entries: Prisma.EntryCreateInput[] = [
       "The bank stage will do one of two things depending on whether or not the validator is the leader. If it is the leader, then the transactions are processed, and those that do not fail are committed to the bank. If the validator is not the leader, then it will forward packets to the leader. ",
   },
   {
-    term: "Transaction Process Unit",
+    term: "Transaction Processing Unit",
     acronym: "TPU",
     definition:
       "The TPU is the overall system that handles fetching, verifying, processing, etc... for transactions",
