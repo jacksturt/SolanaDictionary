@@ -5,18 +5,35 @@
 await import("./src/env.js");
 
 /** @type {import("next").NextConfig} */
-const config = {async headers() {
-    return [
+const config = {
+    async headers() {
+      return [
         {
-            // matching all API routes
-            source: "/api/extension/sentenceParser",
-            headers: [
-                { key: "Access-Control-Allow-Origin", value: "https://medium.com" }, // replace this your actual origin
-                { key: "Access-Control-Allow-Methods", value: "GET,DELETE,PATCH,POST,PUT" },
-                { key: "Access-Control-Allow-Headers", value: "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version" },
-            ]
-        }
-    ]
-}};
+          // Routes this applies to
+          source: "/api/(.*)",
+          // Headers
+          headers: [
+            // Allow for specific domains to have access or * for all
+            {
+              key: "Access-Control-Allow-Origin",
+              value: "*",
+              // DOES NOT WORK
+              // value: process.env.ALLOWED_ORIGIN,
+            },
+            // Allows for specific methods accepted
+            {
+              key: "Access-Control-Allow-Methods",
+              value: "GET, POST, PUT, DELETE, OPTIONS",
+            },
+            // Allows for specific headers accepted (These are a few standard ones)
+            {
+              key: "Access-Control-Allow-Headers",
+              value: "Content-Type, Authorization",
+            },
+          ],
+        },
+      ];
+    },
+  };
 
 export default config;
