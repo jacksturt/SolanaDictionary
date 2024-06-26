@@ -45,7 +45,7 @@ export const OPTIONS = async (request: NextRequest) => {
     {},
     {
       status: 200,
-      headers: getCorsHeaders(request.headers.get("origin") || ""),
+      headers: getCorsHeaders(request.headers.get("origin") ?? ""),
     }
   );
 };
@@ -70,27 +70,7 @@ export const GET = async (request: NextRequest) => {
     },
     {
       status: 200,
-      headers: getCorsHeaders(request.headers.get("origin") || ""),
-    }
-  );
-};
-
-/**
- * Basic POST Request to simuluate CREATE in LCRUD
- * @param request
- */
-export const POST = async (request: NextRequest) => {
-  // Get JSON payload
-  const data = await request.json();
-
-  // Return Response
-  return NextResponse.json(
-    {
-      data,
-    },
-    {
-      status: 200,
-      headers: getCorsHeaders(request.headers.get("origin") || ""),
+      headers: getCorsHeaders(request.headers.get("origin") ?? ""),
     }
   );
 };
