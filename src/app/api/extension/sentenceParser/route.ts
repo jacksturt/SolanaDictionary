@@ -1,6 +1,7 @@
 // Imports
 // ========================================================
 import { NextResponse, type NextRequest } from "next/server";
+import cors from "~/utils/cors";
 
 
 
@@ -13,19 +14,11 @@ import { NextResponse, type NextRequest } from "next/server";
  */
 export const GET = async (request: NextRequest) => {
   // Return Response
-  return NextResponse.json(
-    {
-      data: [
-        {
-          id: "45eb616b-7283-4a16-a4e7-2a25acbfdf02",
-          name: "John Doe",
-          email: "john.doe@email.com",
-          createdAt: new Date().toISOString(),
-        },
-      ],
-    },
-    {
+  return cors(
+    request,
+    new Response(JSON.stringify({ message: 'Hello World!' }), {
       status: 200,
-    }
-  );
+      headers: { 'Content-Type': 'application/json' },
+    })
+  )
 };
