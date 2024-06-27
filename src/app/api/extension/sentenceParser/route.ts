@@ -2,20 +2,19 @@
 // ========================================================
 import { NextResponse, type NextRequest } from "next/server";
 import { Entry } from "~/server/api/routers/entry/read";
-import { ParsedSentenceEntry } from "~/server/api/routers/sentenceParser/parse";
 import { db } from "~/server/db";
 import NodeCache from 'node-cache';
 const cache = new NodeCache({ stdTTL: 60 }); // Cache TTL (time-to-live) set to 60 seconds
 
-const getTermAndAcronymMap = async (): Promise<{ [key: string]: Partial<Entry> }> => {
+const getTermAndAcronymMap = async (): Promise<Record<string, Partial<Entry>>> => {
   const cacheKey = 'termAndAcronymMap';
   const cachedData = cache.get(cacheKey);
 
   if (cachedData) {
-    return cachedData as { [key: string]: Partial<Entry> };
+    return cachedData as Record<string, Partial<Entry>>;
   }
     const entries = await db.entry.findMany({select: {term: true, acronym: true, definition: true}});
-    const termAndAcronymMap: { [key: string]: Partial<Entry> } = {};
+    const termAndAcronymMap: Record<string, Partial<Entry>> = {};
     entries.forEach(entry => {
         termAndAcronymMap[entry.term.toLowerCase()] = entry;
         if( entry.acronym) {
@@ -26,8 +25,10 @@ const getTermAndAcronymMap = async (): Promise<{ [key: string]: Partial<Entry> }
     return termAndAcronymMap;
 };
 
+type ParsedSentenceMinified = string | { term: string, entry: Partial<Entry> };
+
 type ParsedSentenceWithElementId = {
-    sentence: ParsedSentenceEntry[];
+    sentence: ParsedSentenceMinified[];
     elementId: string;
 }
 
@@ -35,7 +36,7 @@ const parseSentence = async (sentence: string, elementId: string): Promise<Parse
   const termAndAcronymMap = await getTermAndAcronymMap();
 
   const splitSentence = sentence.toLowerCase().split(" ");
-    const parsedSentence: ParsedSentenceEntry[] = [];
+    const parsedSentence: ParsedSentenceMinified[] = [];
     let currentWord = splitSentence[0];
     let currentIndex = 0;
     while (currentWord) {

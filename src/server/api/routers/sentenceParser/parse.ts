@@ -6,7 +6,7 @@ import {
   import { z } from "zod";
 import { Entry, search } from "~/server/api/routers/entry/read";
 
-export type ParsedSentenceEntry = string | { term: string, entry: Partial<Entry> };
+export type ParsedSentenceEntry = string | { term: string, entry: Entry };
 
   export const parseSentence = publicProcedure.input(z.object({
     sentence: z.string(),
