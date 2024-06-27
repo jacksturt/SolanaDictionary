@@ -1,11 +1,5 @@
-/**
- * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially useful
- * for Docker builds.
- */
-await import("./src/env.js");
-
-/** @type {import("next").NextConfig} */
-const config = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
     async headers() {
       return [
         {
@@ -25,7 +19,7 @@ const config = {
               key: "Access-Control-Allow-Methods",
               value: "GET, POST, PUT, DELETE, OPTIONS",
             },
-            // Allows for specific headers accepted (These are a few standard ones)
+            // Allows for specific headers accepted (These are a few standard)
             {
               key: "Access-Control-Allow-Headers",
               value: "Content-Type, Authorization",
@@ -34,9 +28,6 @@ const config = {
         },
       ];
     },
-    async redirects() {
-        return [];
-      },
   };
 
-export default config;
+  module.exports = nextConfig;
