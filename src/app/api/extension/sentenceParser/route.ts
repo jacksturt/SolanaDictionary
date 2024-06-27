@@ -22,3 +22,7 @@ export const GET = async (request: NextRequest) => {
     })
   )
 };
+
+export const OPTIONS = async (req: NextRequest, res: NextResponse) => {
+  if (await cors(req, res)) return;
+};
