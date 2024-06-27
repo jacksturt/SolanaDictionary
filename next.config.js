@@ -34,6 +34,9 @@ const config = {
         },
       ];
     },
+    async redirects() {
+        return [];
+      },
   };
 
 export default config;
