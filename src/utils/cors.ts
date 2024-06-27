@@ -42,21 +42,8 @@ function isOriginAllowed(origin: string, allowed: StaticOrigin): boolean {
 function getOriginHeaders(reqOrigin: string | undefined, origin: StaticOrigin) {
   const headers = new Headers()
 
-  if (origin === '*') {
-    // Allow any origin
-    headers.set('Access-Control-Allow-Origin', '*')
-  } else if (typeof origin === 'string') {
-    // Fixed origin
-    headers.set('Access-Control-Allow-Origin', origin)
-    headers.append('Vary', 'Origin')
-  } else {
-    const allowed = isOriginAllowed(reqOrigin ?? '', origin)
 
-    if (allowed && reqOrigin) {
-      headers.set('Access-Control-Allow-Origin', reqOrigin)
-    }
-    headers.append('Vary', 'Origin')
-  }
+  headers.set('Access-Control-Allow-Origin', '*')
 
   return headers
 }
