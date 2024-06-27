@@ -36,21 +36,23 @@ type ParsedSentenceWithElementId = {
 const parseSentence = async (sentence: string, elementId: string): Promise<ParsedSentenceWithElementId> => {
   const termAndAcronymMap = await getTermAndAcronymMap();
 
-  const splitSentence = sentence.toLowerCase().split(" ");
+  const splitSentence = sentence.split(" ");
     const parsedSentence: ParsedSentenceMinified[] = [];
     let currentWord = splitSentence[0];
     let currentIndex = 0;
     while (currentWord) {
-        const exactMatch = termAndAcronymMap[currentWord];
+
+        const lowerCaseCurrentWord = currentWord.toLowerCase();
+        const exactMatch = termAndAcronymMap[lowerCaseCurrentWord];
         if (exactMatch) {
-            parsedSentence.push({ term: exactMatch.term ?? "", entry: exactMatch, type: termAndAcronymMap[currentWord] === exactMatch ? "term" : "acronym" });
+            parsedSentence.push({ term: exactMatch.term ?? "", entry: exactMatch, type: exactMatch.term!.toLowerCase() === lowerCaseCurrentWord ? "term" : "acronym" });
             currentWord = splitSentence[currentIndex + 1];
             currentIndex++;
             continue;
         }
 
 
-        const searchResults = Object.keys(termAndAcronymMap).filter(key => key.startsWith(currentWord!));
+        const searchResults = Object.keys(termAndAcronymMap).filter(key => key.startsWith(lowerCaseCurrentWord));
         if (searchResults.length === 0) {
             if (typeof parsedSentence[parsedSentence.length - 1] === "string") {
                 const lastString: string = parsedSentence[parsedSentence.length - 1] as string;
