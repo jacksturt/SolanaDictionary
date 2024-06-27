@@ -12,7 +12,7 @@ import cors from "~/utils/cors";
  * @param request
  * @returns
  */
-export const GET = async (request: NextRequest) => {
+ const handler = async (request: NextRequest) => {
   // Return Response
   return cors(
     request,
@@ -23,6 +23,4 @@ export const GET = async (request: NextRequest) => {
   )
 };
 
-export const OPTIONS = async (req: NextRequest, res: NextResponse) => {
-  if (await cors(req, res)) return;
-};
+export { handler as GET, handler as OPTIONS }
