@@ -37,11 +37,21 @@ export type ParsedSentenceEntry = string | { term: string, entry: Entry };
                 },
               },
             where: {
-                term: {
+              OR: [
+                {
+                    term: {
+                        startsWith: currentWord,
+                    endsWith: currentWord,
+                    mode: "insensitive",
+                }},
+                {
+                  acronym: {
                     startsWith: currentWord,
                     endsWith: currentWord,
                     mode: "insensitive",
-                },
+                  }
+                }
+              ]
             },
         });
         if (exactMatch) {

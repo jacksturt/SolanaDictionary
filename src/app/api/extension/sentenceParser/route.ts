@@ -32,13 +32,23 @@ import { db } from "~/server/db";
                   },
                 },
               },
-            where: {
-                term: {
-                    startsWith: currentWord,
-                    endsWith: currentWord,
-                    mode: "insensitive",
-                },
-            },
+              where: {
+                OR: [
+                  {
+                      term: {
+                          startsWith: currentWord,
+                      endsWith: currentWord,
+                      mode: "insensitive",
+                  }},
+                  {
+                    acronym: {
+                      startsWith: currentWord,
+                      endsWith: currentWord,
+                      mode: "insensitive",
+                    }
+                  }
+                ]
+              },
         });
         if (exactMatch) {
             console.log('match')
