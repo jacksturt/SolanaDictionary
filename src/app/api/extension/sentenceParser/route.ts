@@ -25,7 +25,8 @@ const getTermAndAcronymMap = async (): Promise<Record<string, Partial<Entry>>> =
     return termAndAcronymMap;
 };
 
-type ParsedSentenceMinified = string | { term: string, entry: Partial<Entry> };
+type ParsedSentenceMinified = string | { term: string, entry: Partial<Entry>,
+  type: "term" | "acronym";};
 
 type ParsedSentenceWithElementId = {
     sentence: ParsedSentenceMinified[];
@@ -42,7 +43,7 @@ const parseSentence = async (sentence: string, elementId: string): Promise<Parse
     while (currentWord) {
         const exactMatch = termAndAcronymMap[currentWord];
         if (exactMatch) {
-            parsedSentence.push({ term: exactMatch.term ?? "", entry: exactMatch });
+            parsedSentence.push({ term: exactMatch.term ?? "", entry: exactMatch, type: termAndAcronymMap[currentWord] === exactMatch ? "term" : "acronym" });
             currentWord = splitSentence[currentIndex + 1];
             currentIndex++;
             continue;
