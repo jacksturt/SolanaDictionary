@@ -5,7 +5,7 @@ import { ParsedSentenceEntry } from "~/server/api/routers/sentenceParser/parse";
 import { db } from "~/server/db";
 
  const handler = async (request: NextRequest) => {
-  const data = await request.json();
+  const data = await request.json() as { sentence: string };
   console.log(data);
   const { sentence } = data;
   const splitSentence = sentence.split(" ");
