@@ -137,6 +137,7 @@ function EntryModalEditContent({
     },
   );
 
+
   const createTag = api.tag.create.useMutation({
     onSuccess: () => {
       router.refresh();
@@ -196,9 +197,11 @@ function EntryModalEditContent({
           <div key={index} className="flex flex-col gap-2">
             <input
               type="text"
+              placeholder="URL"
               value={link.url}
               onChange={(e) => {
                 const newLinks = [...editingLinks];
+                console.log("hello")
                 if (newLinks && !!newLinks[index]?.url) {
                   newLinks[index]!.url = e.target.value;
                 }
@@ -207,6 +210,7 @@ function EntryModalEditContent({
             />
             <input
               type="text"
+              placeholder="Title"
               value={link.title}
               onChange={(e) => {
                 const newLinks = [...editingLinks];

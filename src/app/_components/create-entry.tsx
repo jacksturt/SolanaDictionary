@@ -104,9 +104,31 @@ export function CreateEntry() {
           Add Link
         </button>
         {links.map((link, index) => (
-          <div key={index}>
-            <input type="text" value={link.url} />
-            <input type="text" value={link.title} />
+          <div key={index} className="flex flex-col gap-2">
+            <input
+              type="text"
+              placeholder="URL"
+              value={link.url}
+              onChange={(e) => {
+                const newLinks = [...links];
+                if (newLinks && !!newLinks[index]) {
+                  newLinks[index]!.url = e.target.value;
+                }
+                setLinks(newLinks);
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Title"
+              value={link.title}
+              onChange={(e) => {
+                const newLinks = [...links];
+                if (newLinks && !!newLinks[index]) {
+                  newLinks[index]!.title = e.target.value;
+                }
+                setLinks(newLinks);
+              }}
+            />
             <button
               onClick={(e) => {
                 e.preventDefault();

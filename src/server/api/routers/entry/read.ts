@@ -33,7 +33,7 @@ export const search = publicProcedure.input(z.object({
     const { query } = input;
     return ctx.db.entry.findMany({
         where: {
-            term: { contains: query },
+            term: { contains: query, mode: "insensitive" },
         },
     });
 });
