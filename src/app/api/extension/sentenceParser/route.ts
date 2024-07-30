@@ -42,12 +42,19 @@ const parseSentence = async (sentence: string, elementId: string): Promise<Parse
     let currentIndex = 0;
     while (currentWord) {
       console.log(currentWord);
-
+        const hasStartingMark = currentWord.startsWith("<mark>");
+        const hasEndingMark = currentWord.endsWith("</mark>");
         const lowerCaseCurrentWord = currentWord.toLowerCase();
         const strippedLowerCase = lowerCaseCurrentWord.replace("<mark>", '').replace("</mark>", '');
         const exactMatch = termAndAcronymMap[strippedLowerCase];
         if (exactMatch) {
-            parsedSentence.push({ rawContent: currentWord, term: exactMatch.term ?? "", entry: exactMatch, type: exactMatch.term!.toLowerCase() === lowerCaseCurrentWord ? "term" : "acronym" });
+            parsedSentence.push({
+                rawContent: (hasStartingMark && !hasEndingMark ? "<mark>" : "") + currentWord,
+                term: exactMatch.term ?? "",
+                entry: exactMatch,
+                type: exactMatch.term?.toLowerCase() === lowerCaseCurrentWord ? "term" : "acronym"
+
+            });
             currentWord = splitSentence[currentIndex + 1];
             currentIndex++;
             continue;
@@ -58,10 +65,13 @@ const parseSentence = async (sentence: string, elementId: string): Promise<Parse
         if (searchResults.length === 0) {
           const lastElement = parsedSentence[parsedSentence.length - 1];
             if (lastElement && 'word' in lastElement)  {
+              let lastString: string = lastElement.word;
 
-                const lastString: string = lastElement.word;
+              if(hasEndingMark && !hasStartingMark && !lastString.includes("<mark>")) {
+                lastString = "<mark>" + lastString;
+              }
                 const newString = lastString + " " + currentWord;
-                parsedSentence[parsedSentence.length - 1] = {rawContent: lastElement.rawContent + " " + currentWord, word: newString};
+                parsedSentence[parsedSentence.length - 1] = {rawContent: (hasStartingMark && !hasEndingMark && !lastElement.rawContent.includes("<mark>") ? "<mark>" : "") + lastElement.rawContent + " " + currentWord, word: newString};
             } else {
                 parsedSentence.push({rawContent: currentWord, word: currentWord});
             }
@@ -69,7 +79,7 @@ const parseSentence = async (sentence: string, elementId: string): Promise<Parse
             currentIndex++;
             continue;
         } else {
-            currentWord += " " + splitSentence[currentIndex + 1];
+            currentWord += (hasStartingMark && !hasEndingMark ? "<mark>" : "") + " " + splitSentence[currentIndex + 1];
             currentIndex++;
             continue;
         }
