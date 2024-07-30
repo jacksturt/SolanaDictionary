@@ -25,8 +25,8 @@ const getTermAndAcronymMap = async (): Promise<Record<string, Partial<Entry>>> =
     return termAndAcronymMap;
 };
 
-type ParsedSentenceMinified = string | { term: string, entry: Partial<Entry>,
-  type: "term" | "acronym";};
+type ParsedSentenceMinified = {word: string, hasStartingMark: boolean, hasEndingMark: boolean} | { term: string, entry: Partial<Entry>,
+  type: "term" | "acronym", hasStartingMark: boolean, hasEndingMark: boolean};
 
 type ParsedSentenceWithElementId = {
     sentence: ParsedSentenceMinified[];
@@ -41,11 +41,19 @@ const parseSentence = async (sentence: string, elementId: string): Promise<Parse
     let currentWord = splitSentence[0];
     let currentIndex = 0;
     while (currentWord) {
+      const hasStartingMark = currentWord.startsWith("<mark>");
+      if (hasStartingMark) {
+        currentWord = currentWord.split("<mark>")[1];
+      }
+      const hasEndingMark = currentWord!.endsWith("</mark>");
+      if (hasEndingMark) {
+        currentWord = currentWord!.split("</mark>")[0];
+      }
 
-        const lowerCaseCurrentWord = currentWord.toLowerCase();
+        const lowerCaseCurrentWord = currentWord!.toLowerCase();
         const exactMatch = termAndAcronymMap[lowerCaseCurrentWord];
         if (exactMatch) {
-            parsedSentence.push({ term: exactMatch.term ?? "", entry: exactMatch, type: exactMatch.term!.toLowerCase() === lowerCaseCurrentWord ? "term" : "acronym" });
+            parsedSentence.push({ term: exactMatch.term ?? "", entry: exactMatch, type: exactMatch.term!.toLowerCase() === lowerCaseCurrentWord ? "term" : "acronym", hasStartingMark, hasEndingMark });
             currentWord = splitSentence[currentIndex + 1];
             currentIndex++;
             continue;
@@ -54,12 +62,14 @@ const parseSentence = async (sentence: string, elementId: string): Promise<Parse
 
         const searchResults = Object.keys(termAndAcronymMap).filter(key => key.startsWith(lowerCaseCurrentWord));
         if (searchResults.length === 0) {
-            if (typeof parsedSentence[parsedSentence.length - 1] === "string") {
-                const lastString: string = parsedSentence[parsedSentence.length - 1] as string;
+          const lastElement = parsedSentence[parsedSentence.length - 1];
+            if (lastElement && 'word' in lastElement)  {
+
+                const lastString: string = lastElement.word;
                 const newString = lastString + " " + currentWord;
-                parsedSentence[parsedSentence.length - 1] = newString;
+                parsedSentence[parsedSentence.length - 1] = {word: newString, hasStartingMark, hasEndingMark};
             } else {
-                parsedSentence.push(currentWord);
+                parsedSentence.push({word: currentWord!, hasStartingMark, hasEndingMark});
             }
             currentWord = splitSentence[currentIndex + 1];
             currentIndex++;
