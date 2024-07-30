@@ -25,8 +25,8 @@ const getTermAndAcronymMap = async (): Promise<Record<string, Partial<Entry>>> =
     return termAndAcronymMap;
 };
 
-type ParsedSentenceMinified = {rawContent: string, word: string, hasStartingMark: boolean, hasEndingMark: boolean} | { term: string, entry: Partial<Entry>,
-  type: "term" | "acronym", hasStartingMark: boolean, hasEndingMark: boolean, rawContent: string};
+type ParsedSentenceMinified = {rawContent: string, word: string} | { term: string, entry: Partial<Entry>,
+  type: "term" | "acronym", rawContent: string};
 
 type ParsedSentenceWithElementId = {
     sentence: ParsedSentenceMinified[];
@@ -41,20 +41,13 @@ const parseSentence = async (sentence: string, elementId: string): Promise<Parse
     let currentWord = splitSentence[0];
     let currentIndex = 0;
     while (currentWord) {
-      const hasStartingMark = currentWord.startsWith("<mark>");
-      if (hasStartingMark) {
-        currentWord = currentWord.split("<mark>")[1];
-      }
-      const hasEndingMark = currentWord!.endsWith("</mark>");
-      if (hasEndingMark) {
-        currentWord = currentWord!.split("</mark>")[0];
-      }
+      console.log(currentWord);
 
-        const lowerCaseCurrentWord = currentWord!.toLowerCase();
+        const lowerCaseCurrentWord = currentWord.toLowerCase();
         const strippedLowerCase = lowerCaseCurrentWord.replace("<mark>", '').replace("</mark>", '');
         const exactMatch = termAndAcronymMap[strippedLowerCase];
         if (exactMatch) {
-            parsedSentence.push({ rawContent: currentWord!, term: exactMatch.term ?? "", entry: exactMatch, type: exactMatch.term!.toLowerCase() === lowerCaseCurrentWord ? "term" : "acronym", hasStartingMark, hasEndingMark });
+            parsedSentence.push({ rawContent: currentWord, term: exactMatch.term ?? "", entry: exactMatch, type: exactMatch.term!.toLowerCase() === lowerCaseCurrentWord ? "term" : "acronym" });
             currentWord = splitSentence[currentIndex + 1];
             currentIndex++;
             continue;
@@ -68,9 +61,9 @@ const parseSentence = async (sentence: string, elementId: string): Promise<Parse
 
                 const lastString: string = lastElement.word;
                 const newString = lastString + " " + currentWord;
-                parsedSentence[parsedSentence.length - 1] = {rawContent: lastElement.rawContent, word: newString, hasStartingMark, hasEndingMark};
+                parsedSentence[parsedSentence.length - 1] = {rawContent: lastElement.rawContent + " " + currentWord, word: newString};
             } else {
-                parsedSentence.push({rawContent: currentWord!, word: currentWord!, hasStartingMark, hasEndingMark});
+                parsedSentence.push({rawContent: currentWord, word: currentWord});
             }
             currentWord = splitSentence[currentIndex + 1];
             currentIndex++;
