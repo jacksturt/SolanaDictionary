@@ -25,8 +25,8 @@ const getTermAndAcronymMap = async (): Promise<Record<string, Partial<Entry>>> =
     return termAndAcronymMap;
 };
 
-type ParsedSentenceMinified = {word: string, hasStartingMark: boolean, hasEndingMark: boolean} | { term: string, entry: Partial<Entry>,
-  type: "term" | "acronym", hasStartingMark: boolean, hasEndingMark: boolean};
+type ParsedSentenceMinified = {rawContent: string, word: string, hasStartingMark: boolean, hasEndingMark: boolean} | { term: string, entry: Partial<Entry>,
+  type: "term" | "acronym", hasStartingMark: boolean, hasEndingMark: boolean, rawContent: string};
 
 type ParsedSentenceWithElementId = {
     sentence: ParsedSentenceMinified[];
@@ -51,9 +51,10 @@ const parseSentence = async (sentence: string, elementId: string): Promise<Parse
       }
 
         const lowerCaseCurrentWord = currentWord!.toLowerCase();
-        const exactMatch = termAndAcronymMap[lowerCaseCurrentWord];
+        const strippedLowerCase = lowerCaseCurrentWord.replace("<mark>", '').replace("</mark>", '');
+        const exactMatch = termAndAcronymMap[strippedLowerCase];
         if (exactMatch) {
-            parsedSentence.push({ term: exactMatch.term ?? "", entry: exactMatch, type: exactMatch.term!.toLowerCase() === lowerCaseCurrentWord ? "term" : "acronym", hasStartingMark, hasEndingMark });
+            parsedSentence.push({ rawContent: currentWord!, term: exactMatch.term ?? "", entry: exactMatch, type: exactMatch.term!.toLowerCase() === lowerCaseCurrentWord ? "term" : "acronym", hasStartingMark, hasEndingMark });
             currentWord = splitSentence[currentIndex + 1];
             currentIndex++;
             continue;
@@ -67,9 +68,9 @@ const parseSentence = async (sentence: string, elementId: string): Promise<Parse
 
                 const lastString: string = lastElement.word;
                 const newString = lastString + " " + currentWord;
-                parsedSentence[parsedSentence.length - 1] = {word: newString, hasStartingMark, hasEndingMark};
+                parsedSentence[parsedSentence.length - 1] = {rawContent: lastElement.rawContent, word: newString, hasStartingMark, hasEndingMark};
             } else {
-                parsedSentence.push({word: currentWord!, hasStartingMark, hasEndingMark});
+                parsedSentence.push({rawContent: currentWord!, word: currentWord!, hasStartingMark, hasEndingMark});
             }
             currentWord = splitSentence[currentIndex + 1];
             currentIndex++;
