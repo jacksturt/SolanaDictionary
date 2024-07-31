@@ -11,6 +11,7 @@ export default function Header({ session }: { session: Session | null }) {
       <div className="flex items-center gap-2 text-xl text-black">
         <img src="/images/solLogo.png" alt="Solana Logo" className="h-8 w-8" />
         Solana Dictionary
+        <div className="text-xs text-gray-500">BETA</div>
       </div>
       {session?.user.isAdmin && (
         <button onClick={() => seedDatabase.mutate()}>Seed Database</button>

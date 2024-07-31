@@ -29,7 +29,7 @@ const columns: ColumnDef<Entry>[] = [
   },
   {
     accessorKey: "peerReviewCount",
-    header: "Peer Reviews",
+    header: "Reviews",
     cell: ({ row }) => (
       <div>
         {
@@ -457,6 +457,8 @@ function EntryContent({
   entries: Entry[] | undefined;
   session: Session | null;
 }) {
+  console.log('entries', entries!.length)
+
   const [showEntryModal, setShowEntryModal] = useState(false);
   const [showCreateEntryModal, setShowCreateEntryModal] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
