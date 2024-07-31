@@ -25,6 +25,7 @@ function AuthShowcase({ session }: { session: Session | null }) {
   return (
     <div className="relative mx-4 inline-block text-left">
       <div>
+        <Link target="_blank" href="https://docs.google.com/document/d/1OGRvxsb8eLPWMHHO3oZlgsUmKHmoq7c450AQzpyS4D4/edit?usp=sharing">Download Extension</Link>
         <Link
           href={session ? "/api/auth/signout" : "/api/auth/signin"}
           className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
