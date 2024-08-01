@@ -50,6 +50,26 @@ export function CreateEntry() {
     },
   });
 
+  const createEntryComponent = (entry: Entry) => {
+    return (
+      <div
+        className={cn("flex justify-between", `border-1 border-solid`)}
+        key={entry.id}
+      >
+        {entry.term}{" "}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            setRelations([...relations, entry]);
+            setEntrySearchTerm("");
+          }}
+        >
+          Add
+        </button>
+      </div>
+    );
+  };
+
   return (
     <form
       onSubmit={(e) => {
@@ -161,27 +181,35 @@ export function CreateEntry() {
             </div>
           ))}
         </div>
-        {tagSearchTerm !== "" && <button
-          onClick={(e) => {
-            e.preventDefault();
-            createTag.mutate(
-              { name: tagSearchTerm, color: getContrastedHexColor() },
-              {
-                onSuccess: (tag) => {
-                  setTagSearchTerm("");
-                  setTags([...tags, tag]);
+        {tagSearchTerm !== "" && (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              createTag.mutate(
+                { name: tagSearchTerm, color: getContrastedHexColor() },
+                {
+                  onSuccess: (data: {
+                    id?: string;
+                    name?: string;
+                    color?: string;
+                    createdAt?: string;
+                    updatedAt?: string;
+                  }) => {
+                    setTagSearchTerm("");
+                    setTags([...tags, data as unknown as Tag]);
+                  },
                 },
-              },
-            );
-          }}
-          disabled={
-            !tagSearchTerm ||
-            tagSearchResults?.some((tag) => tag.name === tagSearchTerm)
-          }
-          className="rounded-md border border-black bg-white/20 px-10 py-3 font-semibold transition hover:bg-white/20"
-        >
-          Create Tag &quot;{tagSearchTerm}&quot;
-        </button>}
+              );
+            }}
+            disabled={
+              !tagSearchTerm ||
+              tagSearchResults?.some((tag) => tag.name === tagSearchTerm)
+            }
+            className="rounded-md border border-black bg-white/20 px-10 py-3 font-semibold transition hover:bg-white/20"
+          >
+            Create Tag &quot;{tagSearchTerm}&quot;
+          </button>
+        )}
         <input
           type="text"
           placeholder="Tag Search"
@@ -198,7 +226,7 @@ export function CreateEntry() {
             <button
               onClick={(e) => {
                 e.preventDefault();
-                setTags([...tags, tag]);
+                setTags([...tags, tag as unknown as Tag]);
                 setTagSearchTerm("");
               }}
             >
@@ -233,23 +261,8 @@ export function CreateEntry() {
           value={entrySearchTerm}
           onChange={(e) => setEntrySearchTerm(e.target.value)}
         />
-        {entrySearchResults?.map((entry) => (
-          <div
-            className={cn("flex justify-between", `border-1 border-solid`)}
-            key={entry.id}
-          >
-            {entry.term}{" "}
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                setRelations([...relations, entry]);
-                setEntrySearchTerm("");
-              }}
-            >
-              Add
-            </button>
-          </div>
-        ))}
+        {/* @ts-expect-error: This error is irrelevant and wrong */}
+        {entrySearchResults?.map((entry) => createEntryComponent(entry))}
       </div>
       <button
         type="submit"

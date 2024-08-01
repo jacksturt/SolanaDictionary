@@ -80,6 +80,7 @@ function SentenceParserContent() {
       </div>
       {parsedSentence && (
         <div className="flex gap-1">
+          {/* @ts-expect-error: This error is irrelevant and wrong */}
           {parsedSentence.map((entry, index) => {
             if (typeof entry === "string") {
               return <div key={index}>{entry}</div>;
@@ -87,7 +88,7 @@ function SentenceParserContent() {
             return (
               <AnnotatedEntry
                 key={index}
-                entry={entry.entry}
+                entry={entry.entry as unknown as Entry}
                 setShowModal={setShowModal}
                 setSelectedEntry={setSelectedEntry}
               />

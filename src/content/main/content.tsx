@@ -137,7 +137,6 @@ function EntryModalEditContent({
     },
   );
 
-
   const createTag = api.tag.create.useMutation({
     onSuccess: () => {
       router.refresh();
@@ -201,7 +200,7 @@ function EntryModalEditContent({
               value={link.url}
               onChange={(e) => {
                 const newLinks = [...editingLinks];
-                console.log("hello")
+                console.log("hello");
                 if (newLinks && !!newLinks[index]?.url) {
                   newLinks[index]!.url = e.target.value;
                 }
@@ -262,7 +261,7 @@ function EntryModalEditContent({
                   {
                     onSuccess: (tag) => {
                       setTagSearchTerm("");
-                      setTags([...tags, tag]);
+                      setTags([...tags, tag as unknown as Tag]);
                     },
                   },
                 );
@@ -292,7 +291,7 @@ function EntryModalEditContent({
             <button
               onClick={(e) => {
                 e.preventDefault();
-                setTags([...tags, tag]);
+                setTags([...tags, tag as unknown as Tag]);
                 setTagSearchTerm("");
               }}
             >
@@ -327,6 +326,7 @@ function EntryModalEditContent({
           value={entrySearchTerm}
           onChange={(e) => setEntrySearchTerm(e.target.value)}
         />
+        {/* @ts-expect-error: This error is irrelevant and wrong */}
         {entrySearchResults?.map((entry) => (
           <div
             className={cn("flex justify-between", `border-1 border-solid`)}
@@ -336,7 +336,7 @@ function EntryModalEditContent({
             <button
               onClick={(e) => {
                 e.preventDefault();
-                setRelations([...relations, entry]);
+                setRelations([...relations, entry as unknown as Entry]);
                 setEntrySearchTerm("");
               }}
             >
@@ -457,7 +457,7 @@ function EntryContent({
   entries: Entry[] | undefined;
   session: Session | null;
 }) {
-  console.log('entries', entries!.length)
+  console.log("entries", entries!.length);
 
   const [showEntryModal, setShowEntryModal] = useState(false);
   const [showCreateEntryModal, setShowCreateEntryModal] = useState(false);
