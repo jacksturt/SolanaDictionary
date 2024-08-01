@@ -80,7 +80,6 @@ function SentenceParserContent() {
       </div>
       {parsedSentence && (
         <div className="flex gap-1">
-          {/* @ts-expect-error: This error is irrelevant and wrong */}
           {parsedSentence.map((entry, index) => {
             if (typeof entry === "string") {
               return <div key={index}>{entry}</div>;

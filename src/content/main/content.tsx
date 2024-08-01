@@ -147,6 +147,25 @@ function EntryModalEditContent({
       setEditing(false);
     },
   });
+  const createEntryComponent = (entry: Entry) => {
+    return (
+      <div
+        className={cn("flex justify-between", `border-1 border-solid`)}
+        key={entry.id}
+      >
+        {entry.term}{" "}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            setRelations([...relations, entry]);
+            setEntrySearchTerm("");
+          }}
+        >
+          Add
+        </button>
+      </div>
+    );
+  };
   return (
     <form
       onSubmit={(e) => {
@@ -327,23 +346,7 @@ function EntryModalEditContent({
           onChange={(e) => setEntrySearchTerm(e.target.value)}
         />
         {/* @ts-expect-error: This error is irrelevant and wrong */}
-        {entrySearchResults?.map((entry) => (
-          <div
-            className={cn("flex justify-between", `border-1 border-solid`)}
-            key={entry.id}
-          >
-            {entry.term}{" "}
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                setRelations([...relations, entry as unknown as Entry]);
-                setEntrySearchTerm("");
-              }}
-            >
-              Add
-            </button>
-          </div>
-        ))}
+        {entrySearchResults?.map((entry) => createEntryComponent(entry))}
       </div>
       <button
         type="submit"
