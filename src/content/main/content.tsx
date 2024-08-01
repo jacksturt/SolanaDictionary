@@ -487,13 +487,16 @@ function EntryContent({
           <div>
             <button
               onClick={() => setShowCreateEntryModal(true)}
-              className="mb-4"
+              className="mb-4 rounded-md border border-green-500 p-2"
             >
-              Create Entry
+              + Create New Entry
             </button>
             {!session.user.isVerified &&
               !session.user.hasFailedVerification && (
-                <button onClick={() => setShowVerifyModal(true)}>
+                <button
+                  onClick={() => setShowVerifyModal(true)}
+                  className="mb-4 rounded-md border border-black p-2"
+                >
                   Request Verification
                 </button>
               )}
