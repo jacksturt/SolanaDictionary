@@ -77,13 +77,15 @@ model VerificationToken {
 }
 
 model Entry {
-    id             String  @id @default(cuid())
+    id              String  @id @default(cuid())
     // Editable fields (directly)
-    term           String  @unique
-    definition     String
-    links          Json?
-    longDefinition String?
-    acronym        String?
+    term            String  @unique
+    definition      String
+    links           Json?
+    longDefinition  String?
+    acronym         String?
+    updateRequested Boolean @default(false)
+    hidden          Boolean @default(false)
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

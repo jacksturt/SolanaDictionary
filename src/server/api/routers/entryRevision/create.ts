@@ -69,6 +69,8 @@ export const createEntryRevision = protectedProcedure.input(z.object({
         definition: definition,
         longDefinition: longDefinition,
         links: links,
+        hidden: false,
+        updateRequested: false,
         },
 
      } );

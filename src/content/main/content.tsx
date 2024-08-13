@@ -468,6 +468,8 @@ function EntryContent({
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<Entry[]>([]);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const createNewEntryRequest =
+    api.entry.requestDefinition.useMutation();
 
   useEffect(() => {
     const results = entries?.filter((entry) =>
@@ -479,6 +481,7 @@ function EntryContent({
   return (
     <div className={styles.content}>
       <div className={styles.innerContent}>
+        <div className="flex gap-2">
         <input
           type="text"
           placeholder="Search"
@@ -486,6 +489,15 @@ function EntryContent({
           onChange={(e) => setSearchTerm(e.target.value)}
           className="mb-4 w-full rounded-md border border-solid border-black p-4 text-black"
         />
+        {searchResults.length === 0 && <button
+            onClick={() => createNewEntryRequest.mutate({
+              term: searchTerm,
+            })}
+            className="mb-4 rounded-md border border-green-500 p-2 w-fit whitespace-nowrap"
+          >
+            + Request Definition
+          </button>}
+        </div>
         {session?.user && (
           <div>
             <button
@@ -509,7 +521,7 @@ function EntryContent({
         {entries && (
           <DataTable
             columns={columns}
-            data={searchResults}
+            data={searchResults.filter((entry) => !entry.hidden)}
             onRowClick={(entry) => {
               setSelectedEntry(entry);
               setShowEntryModal(true);

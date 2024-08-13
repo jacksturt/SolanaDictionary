@@ -31,3 +31,19 @@ export const createEntry = protectedProcedure.input(z.object({
     await ctx.db.userEntry.create({ data: { userId: user.id, entryId: entry.id, isCreator: true } });
     return entry;
 });
+
+export const createNewEntryRequest = protectedProcedure.input(z.object({
+    term: z.string(),
+})).mutation(async ({ ctx, input }) => {
+    const { term } = input;
+    const { user } = ctx.session;
+    const entry = await ctx.db.entry.create(
+        { data:
+            { term,
+            definition: "TODO",
+            hidden: true,
+            updateRequested: true,
+            } });
+    await ctx.db.userEntry.create({ data: { userId: user.id, entryId: entry.id, isCreator: true } });
+    return entry;
+});
