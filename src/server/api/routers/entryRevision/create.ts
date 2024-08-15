@@ -15,8 +15,9 @@ export const createEntryRevision = protectedProcedure.input(z.object({
     tags: z.array(z.string()),
     relations: z.array(z.string()),
     longDefinition: z.string(),
+    hidden: z.boolean(),
 })).mutation(async ({ ctx, input }) => {
-    const { term, definition, links, tags, longDefinition, relations } = input;
+    const { term, definition, links, tags, longDefinition, relations, hidden } = input;
     const { user } = ctx.session;
     const entry = await ctx.db.entry.findUnique({ where: { id: input.id }, include: { tags: true, relatedTo: { include: { entryB: true } } } });
     if (!entry) {
@@ -30,6 +31,8 @@ export const createEntryRevision = protectedProcedure.input(z.object({
         previousLinks: entry.links ?? [],
         previousTags: entry.tags.map((tag) => tag.tagId),
         previousLongDefinition: entry.longDefinition,
+        previousHidden: entry.hidden,
+        hidden: hidden,
         term,
         definition,
         links,
@@ -49,10 +52,10 @@ export const createEntryRevision = protectedProcedure.input(z.object({
     const currentTagNames = entry.tags.map(tag => tag.tagId) || [];
 
   // Determine tags to disconnect
-  const tagsToDisconnect = currentTagNames.filter(tag => !tags.includes(tag));
+    const tagsToDisconnect = currentTagNames.filter(tag => !tags.includes(tag));
 
 
-  const tagsToCreateAndConnect = tags.filter(tag => !currentTagNames.includes(tag));
+    const tagsToCreateAndConnect = tags.filter(tag => !currentTagNames.includes(tag));
     const currentRelatedTerms = entry.relatedTo.map(relation => relation.entryB.id) || [];
     const relatedTermsToDisconnect = currentRelatedTerms.filter(term => !relations.includes(term));
     const relatedTermsToCreateAndConnect = relations.filter(term => !currentRelatedTerms.includes(term));
@@ -62,24 +65,24 @@ export const createEntryRevision = protectedProcedure.input(z.object({
         where: {
           id: { in: tagsToCreateAndConnect } // Replace `tagIds` with the array of IDs you are trying to connect
         }
-      });
+    });
 
     await ctx.db.entry.update({ where: { id: entry.id }, data: { currentVersionId: entryRevision.id,
         term: term,
         definition: definition,
         longDefinition: longDefinition,
         links: links,
-        hidden: false,
+        hidden,
         updateRequested: false,
         },
 
-     } );
-     await ctx.db.entryTag.deleteMany({ where: { entryId: entry.id, tagId: { in: tagsToDisconnect } } });
-     await ctx.db.entryTag.createMany({ data: tagsExist.map((tag) => ({ entryId: entry.id, tagId: tag.id })) });
+    } );
+    await ctx.db.entryTag.deleteMany({ where: { entryId: entry.id, tagId: { in: tagsToDisconnect } } });
+    await ctx.db.entryTag.createMany({ data: tagsExist.map((tag) => ({ entryId: entry.id, tagId: tag.id })) });
     //  Right now we are creating duplicate rows, but this allows for a relatedTo that is not in my relatedFrom, which may be used in the future
-     await ctx.db.entryRelation.deleteMany({ where: { entryAId: entry.id, entryBId: { in: relatedTermsToDisconnect } } });
-     await ctx.db.entryRelation.createMany({ data: relatedTermsToCreateAndConnect.map((term) => ({ entryAId: entry.id, entryBId: term })) });
-     await ctx.db.entryRelation.deleteMany({ where: { entryBId: entry.id, entryAId: { in: relatedTermsToDisconnect } } });
-     await ctx.db.entryRelation.createMany({ data: relatedTermsToCreateAndConnect.map((term) => ({ entryBId: entry.id, entryAId: term })) });
+    await ctx.db.entryRelation.deleteMany({ where: { entryAId: entry.id, entryBId: { in: relatedTermsToDisconnect } } });
+    await ctx.db.entryRelation.createMany({ data: relatedTermsToCreateAndConnect.map((term) => ({ entryAId: entry.id, entryBId: term })) });
+    await ctx.db.entryRelation.deleteMany({ where: { entryBId: entry.id, entryAId: { in: relatedTermsToDisconnect } } });
+    await ctx.db.entryRelation.createMany({ data: relatedTermsToCreateAndConnect.map((term) => ({ entryBId: entry.id, entryAId: term })) });
     return entryRevision;
 });

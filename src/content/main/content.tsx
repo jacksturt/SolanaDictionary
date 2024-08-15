@@ -120,6 +120,7 @@ function EntryModalEditContent({
   const [relations, setRelations] = useState<EntrySearchResult[]>(
     entry.relatedTo.map((relation) => relation.entryB),
   );
+  const [hidden, setHidden] = useState(entry.hidden);
 
   const [tagSearchTerm, setTagSearchTerm] = useState("");
   const [entrySearchTerm, setEntrySearchTerm] = useState("");
@@ -189,6 +190,10 @@ function EntryModalEditContent({
         onChange={(e) => setEditingTerm(e.target.value)}
         className="w-full rounded-md border border-solid border-black p-4 text-black"
       />
+      <label>
+        <input type="checkbox" checked={hidden} onChange={(e) => setHidden(e.target.checked)} />
+        Hidden
+      </label>
       <textarea
         placeholder="Definition"
         value={editingDefinition}
@@ -460,8 +465,7 @@ function EntryContent({
   entries: Entry[] | undefined;
   session: Session | null;
 }) {
-  console.log("entries", entries!.length);
-
+  const [showOnlyHidden, setShowOnlyHidden] = useState(false);
   const [showEntryModal, setShowEntryModal] = useState(false);
   const [showCreateEntryModal, setShowCreateEntryModal] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
@@ -499,10 +503,10 @@ function EntryContent({
           </button>}
         </div>
         {session?.user && (
-          <div>
+          <div className="flex items-center gap-2 mb-4 ">
             <button
               onClick={() => setShowCreateEntryModal(true)}
-              className="mb-4 rounded-md border border-green-500 p-2"
+              className="rounded-md border border-green-500 p-2"
             >
               + Create New Entry
             </button>
@@ -515,13 +519,19 @@ function EntryContent({
                   Request Verification
                 </button>
               )}
+              {session.user && (
+                <label className="flex items-center gap-2 ml-2">
+                  <input type="checkbox" checked={showOnlyHidden} onChange={(e) => setShowOnlyHidden(e.target.checked)} />
+                  Show Hidden
+                </label>
+              )}
           </div>
         )}
 
         {entries && (
           <DataTable
             columns={columns}
-            data={searchResults.filter((entry) => !entry.hidden)}
+            data={searchResults.filter((entry) => showOnlyHidden ? entry.hidden : !entry.hidden)}
             onRowClick={(entry) => {
               setSelectedEntry(entry);
               setShowEntryModal(true);

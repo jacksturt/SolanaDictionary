@@ -112,6 +112,7 @@ model EntryRevision {
     links          Json?
     tags           String[]
     acronym        String?
+    hidden         Boolean  @default(false)
 
     previousTerm           String
     previousDefinition     String
@@ -119,6 +120,7 @@ model EntryRevision {
     previousLinks          Json?
     previousTags           String[]
     previousAcronym        String?
+    previousHidden         Boolean  @default(false)
 
     createdAt      DateTime        @default(now())
     updatedAt      DateTime        @updatedAt
