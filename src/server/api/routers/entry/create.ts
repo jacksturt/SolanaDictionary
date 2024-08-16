@@ -44,6 +44,6 @@ export const createNewEntryRequest = protectedProcedure.input(z.object({
             hidden: true,
             updateRequested: true,
             } });
-    await ctx.db.userEntry.create({ data: { userId: user.id, entryId: entry.id, isCreator: true } });
+    await ctx.db.userEntry.create({ data: { userId: user.id, entryId: entry.id, isCreator: true, hasRequestedUpdate: true } });
     return entry;
 });

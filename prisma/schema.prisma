@@ -137,18 +137,19 @@ model EntryRevision {
 }
 
 model UserEntry {
-    id          String   @id @default(cuid())
-    userId      String
-    entryId     String
-    isCreator   Boolean  @default(false)
-    canEdit     Boolean  @default(false)
-    hasLiked    Boolean  @default(false)
-    hasEdited   Boolean  @default(false)
-    hasReviewed Boolean  @default(false)
-    user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-    entry       Entry    @relation(fields: [entryId], references: [id], onDelete: Cascade)
-    createdAt   DateTime @default(now())
-    updatedAt   DateTime @updatedAt
+    id                 String   @id @default(cuid())
+    userId             String
+    entryId            String
+    isCreator          Boolean  @default(false)
+    canEdit            Boolean  @default(false)
+    hasLiked           Boolean  @default(false)
+    hasEdited          Boolean  @default(false)
+    hasReviewed        Boolean  @default(false)
+    hasRequestedUpdate Boolean  @default(false)
+    user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    entry              Entry    @relation(fields: [entryId], references: [id], onDelete: Cascade)
+    createdAt          DateTime @default(now())
+    updatedAt          DateTime @updatedAt
 
     @@unique([userId, entryId])
 }
