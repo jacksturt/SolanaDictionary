@@ -470,6 +470,7 @@ function EntryContent({
   const [showCreateEntryModal, setShowCreateEntryModal] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [requestButtonHovered, setRequestButtonHovered] = useState(false);
   const [searchResults, setSearchResults] = useState<Entry[]>([]);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const createNewEntryRequest =
@@ -485,22 +486,31 @@ function EntryContent({
   return (
     <div className={styles.content}>
       <div className={styles.innerContent}>
-        <div className="flex gap-2">
+        <div className="flex gap-2 mb-4 ">
         <input
           type="text"
           placeholder="Search"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="mb-4 w-full rounded-md border border-solid border-black p-4 text-black"
+          className="w-full rounded-md border border-solid border-black p-4 text-black"
         />
-        {searchResults.length === 0 && <button
+        {searchResults.length === 0 && <div 
+        
+        onMouseEnter={() => setRequestButtonHovered(true)}
+        onMouseLeave={() => setRequestButtonHovered(false)}
+        className="flex flex-grow relative">
+        <button
             onClick={() => createNewEntryRequest.mutate({
               term: searchTerm,
             })}
-            className="mb-4 rounded-md border border-green-500 p-2 w-fit whitespace-nowrap"
+            disabled={!session?.user}
+
+            className={cn("rounded-md border  p-2 w-fit whitespace-nowrap border-green-500", !session?.user && "cursor-not-allowed opacity-50 border-gray-500")}
           >
             + Request Definition
-          </button>}
+          </button>
+          {requestButtonHovered && !session?.user && <p className="text-lg p-2 w-[100%] flex items-center justify-center rounded-md text-red-500 absolute top-16 left-0 bg-white border border-red-500 ">Please log in first</p>}
+          </div>}
         </div>
         {session?.user && (
           <div className="flex items-center gap-2 mb-4 ">
